@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import "package:dtu_connect/dashboard.dart";
+import "package:dtu_connect/dashboard.dart" show Dashboard;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'signin_page.dart';
 

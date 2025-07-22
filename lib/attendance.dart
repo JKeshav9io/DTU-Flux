@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-
-import 'dashboard.dart';
+import 'package:dtu_connect/data_service.dart';
 
 class Attendance extends StatefulWidget {
-  final Map<String, dynamic> studentData;
-
-  const Attendance({super.key, required this.studentData});
+  const Attendance({super.key});
 
   @override
   State<Attendance> createState() => _AttendanceState();
@@ -15,40 +12,36 @@ class Attendance extends StatefulWidget {
 class _AttendanceState extends State<Attendance> {
   late Map<String, dynamic> _subjectWiseAttendance;
   late Map<String, int> _overallAttendance;
-  late final List<dynamic> rawAttendance;
+  List<dynamic> rawAttendance = [];
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    rawAttendance = widget.studentData['attendance'] ?? [];
-    _processAttendanceData();
-    print("Student Data: ${widget.studentData["attendance"]}");
-  //   print("Attendance Data: ${widget.studentData['attendance']}");
-  //   print("Subject Wise Attendance: $_subjectWiseAttendance");
-  //   print("Overall Attendance: $_overallAttendance");
-  //
-    }
+    _fetchAndProcessAttendance();
+  }
+
+  Future<void> _fetchAndProcessAttendance() async {
+    final attendanceData = await DataService().fetchLoggedInStudentAttendance();
+    setState(() {
+      rawAttendance = attendanceData;
+      _processAttendanceData();
+      isLoading = false;
+    });
+  }
 
   void _processAttendanceData() {
     _subjectWiseAttendance = {};
     _overallAttendance = {'total': 0, 'attended': 0, 'missed': 0};
 
-    // Get attendance list with null safety
-
-    print("Raw Attendance List: $rawAttendance");
-
     for (var record in rawAttendance) {
-      // Check if the record is a Map
-      if (record is! Map<String, dynamic>) {
-        print("Skipping invalid attendance record: $record");
-        continue;
-      }
+      if (record is! Map<String, dynamic>) continue;
 
-      // Safely extract values with null checks
       final String subjectCode = (record['subjectCode'] ?? 'NA').toString();
       final String subjectName = (record['subjectName'] ?? 'NA').toString();
-      final bool isPresent = (record['status'] ?? 'absent').toString().toLowerCase() == 'present';
+      final bool isPresent =
+          (record['status'] ?? 'absent').toString().toLowerCase() == 'present';
 
-      // Initialize subject entry if not exists
       if (!_subjectWiseAttendance.containsKey(subjectCode)) {
         _subjectWiseAttendance[subjectCode] = {
           'subjectName': subjectName,
@@ -57,18 +50,17 @@ class _AttendanceState extends State<Attendance> {
         };
       }
 
-      // Update counts
       _subjectWiseAttendance[subjectCode]!['total'] += 1;
       if (isPresent) {
         _subjectWiseAttendance[subjectCode]!['attended'] += 1;
       }
 
-      // Update overall counts
       _overallAttendance['total'] = _overallAttendance['total']! + 1;
       if (isPresent) {
         _overallAttendance['attended'] = _overallAttendance['attended']! + 1;
       }
     }
+
     _overallAttendance['missed'] =
         _overallAttendance['total']! - _overallAttendance['attended']!;
   }
@@ -83,7 +75,9 @@ class _AttendanceState extends State<Attendance> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,6 +114,7 @@ class _AttendanceState extends State<Attendance> {
     );
   }
 }
+
 
 class OverallAttendanceCard extends StatelessWidget {
   final String totalClasses;
