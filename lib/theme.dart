@@ -1,0 +1,156 @@
+/// Dtu Connect - Theme Fix for Contrast and Accessibility
+/// Keeping original colors, improves theme definitions.
+
+import 'package:flutter/material.dart';
+
+final ThemeData lightTheme = ThemeData(
+  useMaterial3: true,
+  colorScheme: const ColorScheme.light(
+    primary: Color(0xFF8B0000),
+    onPrimary: Colors.white,
+    secondary: Color(0xFFB71C1C),
+    onSecondary: Colors.white,
+    background: Colors.white,
+    onBackground: Colors.black87,
+    surface: Color(0xFFF7F7F7),
+    onSurface: Colors.black87,
+    error: Color(0xFFD32F2F),
+    onError: Colors.white,
+  ),
+  scaffoldBackgroundColor: Colors.white,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Color(0xFF8B0000),
+    foregroundColor: Colors.white,
+    centerTitle: true,
+    elevation: 0,
+    titleTextStyle: TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 22,
+      color: Colors.white,
+    ),
+    iconTheme: IconThemeData(color: Colors.white),
+  ),
+  iconTheme: const IconThemeData(color: Color(0xFF8B0000)),
+  cardTheme: const CardThemeData(
+    color: Color(0xFFF7F7F7),
+    elevation: 2,
+    margin: EdgeInsets.all(8),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+  ),
+  chipTheme: ChipThemeData(
+    backgroundColor: const Color(0xFFF7F7F7),
+    selectedColor: const Color(0xFFB71C1C),
+    secondarySelectedColor: const Color(0xFFB71C1C),
+    labelStyle: const TextStyle(color: Colors.black87),
+    secondaryLabelStyle: const TextStyle(color: Colors.white),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    brightness: Brightness.light,
+  ),
+  dialogTheme: const DialogThemeData(
+    backgroundColor: Color(0xFFF7F7F7),
+    titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+    contentTextStyle: TextStyle(fontSize: 16, color: Colors.black87),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+  ),
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    backgroundColor: Colors.white,
+    selectedItemColor: Color(0xFF8B0000),
+    unselectedItemColor: Colors.black54,
+    selectedIconTheme: IconThemeData(color: Color(0xFF8B0000)),
+  ),
+  listTileTheme: const ListTileThemeData(
+    iconColor: Color(0xFF8B0000),
+    textColor: Colors.black87,
+    selectedColor: Color(0xFFB71C1C),
+  ),
+  inputDecorationTheme: const InputDecorationTheme(
+    border: OutlineInputBorder(),
+    labelStyle: TextStyle(color: Colors.black87),
+    hintStyle: TextStyle(color: Colors.black54),
+    errorStyle: TextStyle(color: Color(0xFFD32F2F)),
+  ),
+  textTheme: const TextTheme(
+    bodyMedium: TextStyle(color: Colors.black87),
+    titleMedium: TextStyle(fontSize: 18, color: Color(0xFF8B0000), fontWeight: FontWeight.w600),
+    labelLarge: TextStyle(color: Color(0xFF8B0000)),
+    headlineSmall: TextStyle(color: Color(0xFF8B0000), fontWeight: FontWeight.bold, fontSize: 24),
+    headlineMedium: TextStyle(color: Color(0xFF8B0000), fontWeight: FontWeight.bold, fontSize: 28),
+  ),
+);
+
+final ThemeData darkTheme = ThemeData(
+  useMaterial3: true,
+  colorScheme: const ColorScheme.dark(
+    primary: Color(0xFF14B8A6),
+    onPrimary: Colors.black,
+    secondary: Color(0xFF2DD4BF),
+    onSecondary: Colors.black,
+    background: Color(0xFF0F172A),
+    onBackground: Color(0xFFE2E8F0),
+    surface: Color(0xFF1E293B),
+    onSurface: Color(0xFFE2E8F0),
+    error: Color(0xFFEF4444),
+    onError: Colors.black,
+  ),
+  scaffoldBackgroundColor: const Color(0xFF0F172A),
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Color(0xFF14B8A6),
+    foregroundColor: Colors.black,
+    centerTitle: true,
+    elevation: 0,
+    titleTextStyle: TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 22,
+      color: Colors.black,
+    ),
+    iconTheme: IconThemeData(color: Colors.black),
+  ),
+  iconTheme: const IconThemeData(color: Color(0xFF2DD4BF)),
+  cardTheme: const CardThemeData(
+    color: Color(0xFF1E293B),
+    elevation: 2,
+    margin: EdgeInsets.all(8),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+  ),
+  chipTheme: ChipThemeData(
+    backgroundColor: const Color(0xFF1E293B),
+    selectedColor: const Color(0xFF2DD4BF),
+    secondarySelectedColor: const Color(0xFF2DD4BF),
+    labelStyle: const TextStyle(color: Color(0xFFE2E8F0)),
+    secondaryLabelStyle: const TextStyle(color: Colors.black),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    brightness: Brightness.dark,
+  ),
+  dialogTheme: const DialogThemeData(
+    backgroundColor: Color(0xFF1E293B),
+    titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFE2E8F0)),
+    contentTextStyle: TextStyle(fontSize: 16, color: Color(0xFFE2E8F0)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+  ),
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    backgroundColor: Color(0xFF1E293B),
+    selectedItemColor: Color(0xFF2DD4BF),
+    unselectedItemColor: Colors.white60,
+    selectedIconTheme: IconThemeData(color: Color(0xFF2DD4BF)),
+  ),
+  listTileTheme: const ListTileThemeData(
+    iconColor: Color(0xFF2DD4BF),
+    textColor: Color(0xFFE2E8F0),
+    selectedColor: Color(0xFF14B8A6),
+  ),
+  inputDecorationTheme: const InputDecorationTheme(
+    border: OutlineInputBorder(),
+    labelStyle: TextStyle(color: Color(0xFFE2E8F0)),
+    hintStyle: TextStyle(color: Colors.white60),
+    errorStyle: TextStyle(color: Color(0xFFEF4444)),
+  ),
+  textTheme: const TextTheme(
+    bodyMedium: TextStyle(color: Color(0xFFE2E8F0)),
+    titleMedium: TextStyle(fontSize: 18, color: Color(0xFF2DD4BF), fontWeight: FontWeight.w600),
+    labelLarge: TextStyle(color: Color(0xFF2DD4BF)),
+    headlineSmall: TextStyle(color: Color(0xFF2DD4BF), fontWeight: FontWeight.bold, fontSize: 24),
+    headlineMedium: TextStyle(color: Color(0xFF2DD4BF), fontWeight: FontWeight.bold, fontSize: 28),
+  ),
+);
