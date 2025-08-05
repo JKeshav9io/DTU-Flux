@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'data_populator.dart';
 import 'firebase_options.dart';
 import 'notification_services.dart';
 import 'splash_screen.dart';
@@ -51,8 +52,14 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +73,8 @@ class MyApp extends StatelessWidget {
       navigatorKey: notificationServices.navigatorKey,
       title: 'DTU Connect',
       debugShowCheckedModeBanner: false,
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      theme: AppThemes.light,           // light theme
+      darkTheme: AppThemes.dark,
       themeMode: ThemeMode.system,
       home: const SplashScreen(),
     );

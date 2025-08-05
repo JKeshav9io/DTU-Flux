@@ -1,92 +1,240 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-Future<void> setupSubjectAssignments() async {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  final String branchId = 'MCE';
-  final String sectionId = 'B05';
+final Map<String, dynamic> weeklyTimetable = {
+  "Monday": {
+    "classes": [
+      {
+        "type": "lecture",
+        "startTime": "09:00 AM",
+        "endTime": "10:00 AM",
+        "subjectName": "Database Management System",
+        "subjectCode": "MC209",
+        "faculty": "Ms. Trasha Gupta",
+        "venue": "AB4-307"
+      },
+      {
+        "type": "lecture",
+        "startTime": "10:00 AM",
+        "endTime": "12:00 PM",
+        "subjectName": "Probability & Statistics",
+        "subjectCode": "MC205",
+        "faculty": "Dr. Devender Kumar",
+        "venue": "AB3-307"
+      },
+      {
+        "type": "lab",
+        "startTime": "12:00 PM",
+        "endTime": "02:00 PM",
+        "subjectName": "Probability & Statistics",
+        "subjectCode": "MC205",
+        "groups": [
+          {
+            "group": "P4",
+            "venue": "CL-1",
+            "faculty": "Prof. R. Srivastava & Mr. Puneet K. Pal"
+          },
+          {
+            "group": "P5",
+            "venue": "CL-2",
+            "faculty": "Dr. Meena Rawat & Ms. Aarti"
+          },
+          {
+            "group": "P6",
+            "venue": "CL-4",
+            "faculty": "Mr. Jamkhongam Touthang & Ms. Priya Yadav"
+          }
+        ]
+      },
+      {
+        "type": "lab",
+        "startTime": "03:00 PM",
+        "endTime": "05:00 PM",
+        "subjectName": "Database Management System",
+        "subjectCode": "MC209",
+        "groups": [
+          {
+            "group": "P4",
+            "venue": "CL-1",
+            "faculty": "Ms. Himani Pokhriyal & Ms. Anjali Aggarwal"
+          },
+          {
+            "group": "P5",
+            "venue": "CL-2",
+            "faculty": "Mr. Rohit Raghav & Mr. Aditya Parashar"
+          },
+          {
+            "group": "P6",
+            "venue": "CL-3",
+            "faculty": "Mr. Kriss Gunjan & Ms. Neetu Malik"
+          }
+        ]
+      }
+    ]
+  },
 
-  final subjects = {
-    'AM102': {
-      'name': 'Mathematics II',
-      'assignments': [
-        {
-          'title': 'Assignment 1 - Integration Techniques',
-          'description': 'Solve Q1–Q5 from Module 2',
-          'fileURL': 'https://example.com/assignments/am102_assign1.pdf',
-          'dueDate': DateTime(2025, 5, 20),
-        },
-        {
-          'title': 'Assignment 2 - Laplace Transforms',
-          'description': 'Practice Laplace questions Q1–Q10',
-          'fileURL': 'https://example.com/assignments/am102_assign2.pdf',
-          'dueDate': DateTime(2025, 5, 27),
-        },
-      ],
-    },
-    'MC104': {
-      'name': 'Discrete Mathematics',
-      'assignments': [
-        {
-          'title': 'Assignment 1 - Combinatorics',
-          'description': 'Solve all questions from Assignment Sheet 3',
-          'fileURL': 'https://example.com/assignments/mc104_assign1.pdf',
-          'dueDate': DateTime(2025, 5, 21),
-        },
-      ],
-    },
-    'MC102': {
-      'name': 'Complex Analysis',
-      'assignments': [
-        {
-          'title': 'Assignment 1 - Complex Numbers',
-          'description': 'Complete exercises from Chapter 1',
-          'fileURL': 'https://example.com/assignments/mc102_assign1.pdf',
-          'dueDate': DateTime(2025, 5, 23),
-        },
-      ],
-    },
-    'CO102': {
-      'name': 'Programming Fundamentals',
-      'assignments': [
-        {
-          'title': 'Assignment 1 - C Functions',
-          'description': 'Write and test recursive functions',
-          'fileURL': 'https://example.com/assignments/co102_assign1.pdf',
-          'dueDate': DateTime(2025, 5, 25),
-        },
-      ],
-    },
-  };
+  "Tuesday": {
+    "classes": [
+      {
+        "type": "lecture",
+        "startTime": "10:00 AM",
+        "endTime": "11:00 AM",
+        "subjectName": "Real Analysis",
+        "subjectCode": "MC203",
+        "faculty": "Ms. Mahima",
+        "venue": "AB3-307"
+      },
+      {
+        "type": "lecture",
+        "startTime": "11:00 AM",
+        "endTime": "12:00 PM",
+        "subjectName": "Real Analysis",
+        "subjectCode": "MC203",
+        "faculty": "Ms. Mahima",
+        "venue": "AB3-308"
+      },
+      {
+        "type": "lecture",
+        "startTime": "02:00 PM",
+        "endTime": "04:00 PM",
+        "subjectName": "Database Management System",
+        "subjectCode": "MC209",
+        "faculty": "Ms. Trasha Gupta",
+        "venue": "AB3-307"
+      }
+    ]
+  },
 
-  for (final subjectCode in subjects.keys) {
-    final subject = subjects[subjectCode]!;
-    final assignments = subject['assignments'] as List<Map<String, dynamic>>;
+  "Wednesday": {
+    "classes": [
+      {
+        "type": "lecture",
+        "startTime": "10:00 AM",
+        "endTime": "11:00 AM",
+        "subjectName": "Data Structure",
+        "subjectCode": "MC201",
+        "faculty": "Dr. Goonjab Jain",
+        "venue": "AB3-307"
+      },
+      {
+        "type": "lecture",
+        "startTime": "11:00 AM",
+        "endTime": "12:00 PM",
+        "subjectName": "Probability & Statistics",
+        "subjectCode": "MC205",
+        "faculty": "Dr. Devender Kumar",
+        "venue": "AB3-307"
+      },
+      {
+        "type": "lecture",
+        "startTime": "01:00 PM",
+        "endTime": "03:00 PM",
+        "subjectName": "Modern Algebra",
+        "subjectCode": "MC207",
+        "faculty": "Dr. Anshu",
+        "venue": "AB3-307"
+      }
+    ]
+  },
 
-    for (int i = 0; i < assignments.length; i++) {
-      final assignment = assignments[i];
-      final assignmentId = 'assign_${i + 1}';
+  "Thursday": {
+    "classes": [
+      {
+        "type": "lecture",
+        "startTime": "10:00 AM",
+        "endTime": "11:00 AM",
+        "subjectName": "Real Analysis",
+        "subjectCode": "MC203",
+        "faculty": "Ms. Mahima",
+        "venue": "AB3-307"
+      },
+      {
+        "type": "lecture",
+        "startTime": "11:00 AM",
+        "endTime": "12:00 PM",
+        "subjectName": "Real Analysis",
+        "subjectCode": "MC203",
+        "faculty": "Ms. Mahima",
+        "venue": "AB3-308"
+      },
+      {
+        "type": "lab",
+        "startTime": "12:00 PM",
+        "endTime": "02:00 PM",
+        "subjectName": "Data Structure",
+        "subjectCode": "MC201",
+        "groups": [
+          {
+            "group": "P4",
+            "venue": "CL-1",
+            "faculty": "Dr. Dinesh Udar & Ms. Shiksha Saini"
+          },
+          {
+            "group": "P5",
+            "venue": "CL-2",
+            "faculty": "Prof. Sangita Kansal & Ms. Anju"
+          },
+          {
+            "group": "P6",
+            "venue": "CL-3",
+            "faculty": "Ms. Trasha Gupta & Ms. Aarti"
+          }
+        ]
+      }
+    ]
+  },
 
-      await firestore
-          .collection('branches')
-          .doc(branchId)
-          .collection('sections')
-          .doc(sectionId)
-          .collection('subjects')
-          .doc(subjectCode)
-          .collection('assignments')
-          .doc(assignmentId)
-          .set({
-        'title': assignment['title'],
-        'description': assignment['description'],
-        'fileURL': assignment['fileURL'],
-        'postedAt': FieldValue.serverTimestamp(),
-        'dueDate': assignment['dueDate'],
-      });
-
-      print('✅ Added $assignmentId for $subjectCode');
-    }
+  "Friday": {
+    "classes": [
+      {
+        "type": "lecture",
+        "startTime": "08:00 AM",
+        "endTime": "09:00 AM",
+        "subjectName": "Data Structure",
+        "subjectCode": "MC201",
+        "faculty": "Dr. Goonjab Jain",
+        "venue": "AB3-307"
+      },
+      {
+        "type": "lecture",
+        "startTime": "09:00 AM",
+        "endTime": "10:00 AM",
+        "subjectName": "Data Structure",
+        "subjectCode": "MC201",
+        "faculty": "Dr. Goonjab Jain",
+        "venue": "AB3-308"
+      },
+      {
+        "type": "lecture",
+        "startTime": "11:00 AM",
+        "endTime": "01:00 PM",
+        "subjectName": "Modern Algebra",
+        "subjectCode": "MC207",
+        "faculty": "Dr. Anshu",
+        "venue": "AB3-307"
+      }
+    ]
   }
+};
 
-  print('🎉 All dummy assignments added!');
+Future<void> uploadTimetable() async {
+  const String branch = "MCE";
+  const String section = "B05";
+
+  for (final entry in weeklyTimetable.entries) {
+    final day = entry.key;
+    final data = entry.value;
+
+    await firestore
+        .collection('branches')
+        .doc(branch)
+        .collection('sections')
+        .doc(section)
+        .collection('timetable')
+        .doc(day)
+        .set(data);
+
+    print("Uploaded timetable for $day");
+  }
 }

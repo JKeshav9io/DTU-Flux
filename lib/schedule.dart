@@ -34,23 +34,25 @@ class _TimetableScreenState extends State<TimetableScreen> {
         : 'Monday';
   }
 
-  Future<void> loadTimetable() async {
+  Future<void> loadTimetable({bool forceRefresh = false}) async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      final cachedData = prefs.getString('timetable_cache');
+      final cacheKey = 'timetable_${branchId}_$sectionId';
 
-      if (cachedData != null) {
-        final decoded = jsonDecode(cachedData);
-        timetable = Map<String, List<Map<String, dynamic>>>.from(
-          decoded.map(
-                (key, value) => MapEntry(
-              key.toString(),
-              List<Map<String, dynamic>>.from(value),
-            ),
-          ),
-        );
-        setState(() => isLoading = false);
-        return;
+      if (!forceRefresh) {
+        final raw = prefs.getString(cacheKey);
+        if (raw != null && raw.isNotEmpty) {
+          final decoded = jsonDecode(raw) as Map<String, dynamic>;
+          timetable = decoded.map((k, v) =>
+              MapEntry(k, List<Map<String, dynamic>>.from(v as List)));
+          setState(() => isLoading = false);
+          return;
+        }
       }
 
       final snapshot = await FirebaseFirestore.instance
@@ -61,17 +63,17 @@ class _TimetableScreenState extends State<TimetableScreen> {
           .collection('timetable')
           .get();
 
-      final Map<String, List<Map<String, dynamic>>> parsed = {};
-
+      final parsed = <String, List<Map<String, dynamic>>>{};
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        if (data['schedule'] is List) {
-          parsed[doc.id] = List<Map<String, dynamic>>.from(data['schedule']);
+        if (data['classes'] is List) {
+          parsed[doc.id] =
+          List<Map<String, dynamic>>.from(data['classes'] as List);
         }
       }
 
       timetable = parsed;
-      await prefs.setString('timetable_cache', jsonEncode(parsed));
+      await prefs.setString(cacheKey, jsonEncode(parsed));
       setState(() => isLoading = false);
     } catch (e) {
       setState(() {
@@ -83,20 +85,25 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
   Widget dayChip(String day) {
     final isSelected = selectedDay == day;
-    return ChoiceChip(
-      label: Text(
-        day,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: isSelected
-              ? Theme.of(context).colorScheme.onPrimary
-              : Theme.of(context).colorScheme.onSurface,
+    final textSize = MediaQuery.of(context).size.width * 0.035;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: ChoiceChip(
+        label: Text(
+          day,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontSize: textSize,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
+          ),
         ),
+        selected: isSelected,
+        showCheckmark: false,
+        selectedColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        onSelected: (_) => setState(() => selectedDay = day),
       ),
-      selected: isSelected,
-      showCheckmark: false,
-      selectedColor: Theme.of(context).colorScheme.primary,
-      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-      onSelected: (_) => setState(() => selectedDay = day),
     );
   }
 
@@ -104,13 +111,19 @@ class _TimetableScreenState extends State<TimetableScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final cardPadding = screenWidth < 400 ? 12.0 : 16.0;
-
     final todaySchedule = timetable[selectedDay];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Class Timetable'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh timetable',
+            onPressed: () => loadTimetable(forceRefresh: true),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -120,10 +133,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-                  .map((day) => Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: dayChip(day),
-              ))
+                  .map((day) => dayChip(day))
                   .toList(),
             ),
           ),
@@ -144,192 +154,136 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 return Padding(
                   padding: EdgeInsets.symmetric(
                       horizontal: cardPadding, vertical: 6),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .shadow
-                              .withOpacity(0.08),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final iconSize = constraints.maxWidth * 0.06;
+                      final titleSize = constraints.maxWidth * 0.05;
+                      final labelSize = constraints.maxWidth * 0.04;
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .shadow
+                                  .withOpacity(0.08),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment
-                                .spaceBetween,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Icon(
-                                      Icons
-                                          .menu_book_rounded,
-                                      color:
-                                      Theme.of(context)
-                                          .iconTheme
-                                          .color),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    item['subject'] ??
-                                        'Unknown Subject',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium,
+                                  Flexible(
+                                    flex: 2,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.menu_book_rounded,
+                                          size: iconSize,
+                                          color: Theme.of(context).iconTheme.color,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            item['subjectFullName'] ?? item['subjectName'] ?? 'Unknown Subject',
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                              fontSize: titleSize,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Flexible(
+                                    flex: 1,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () => showDialog(
+                                        context: context,
+                                        builder: (_) => AlertDialog(
+                                          title: const Text('Syllabus'),
+                                          content: const Text('Syllabus view coming soon...'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('Close'),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      icon: Icon(
+                                        Icons.book_outlined,
+                                        size: labelSize,
+                                      ),
+                                      label: Text(
+                                        "Syllabus",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                          fontSize: labelSize,
+                                          color: Theme.of(context).colorScheme.onPrimary,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context).colorScheme.primary,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: constraints.maxWidth * 0.03,
+                                          vertical: constraints.maxWidth * 0.015,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
-                              ElevatedButton.icon(
-                                onPressed: () => showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: const Text(
-                                        'Syllabus'),
-                                    content: const Text(
-                                        'Syllabus view coming soon...'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                                context),
-                                        child: Text(
-                                          'Close',
-                                          style: Theme.of(
-                                              context)
-                                              .textTheme
-                                              .labelLarge
-                                              ?.copyWith(
-                                            color: Theme.of(
-                                                context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                icon: Icon(
-                                  Icons.book_outlined,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimary,
-                                ),
-                                label: Text(
-                                  "Syllabus",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge
-                                      ?.copyWith(
-                                    fontSize: 13,
-                                    color:
-                                    Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary,
-                                  ),
-                                ),
-                                style:
-                                ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets
-                                      .symmetric(
-                                      horizontal: 12,
-                                      vertical: 8),
-                                  shape:
-                                  RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(
-                                        12),
-                                  ),
-                                  backgroundColor:
-                                  Theme.of(context)
-                                      .colorScheme
-                                      .primary,
-                                  foregroundColor:
-                                  Theme.of(context)
-                                      .colorScheme
-                                      .onPrimary,
-                                ),
-                              )
+                              const SizedBox(height: 12),
+                              _infoRow(
+                                icon: Icons.code,
+                                text:
+                                "Code: ${item['subjectCode'] ?? '-'}",
+                                iconSize: iconSize,
+                                textSize: labelSize,
+                              ),
+                              const SizedBox(height: 4),
+                              _infoRow(
+                                icon: Icons.person,
+                                text:
+                                "Teacher: ${item['faculty'] ?? 'TBA'}",
+                                iconSize: iconSize,
+                                textSize: labelSize,
+                              ),
+                              const SizedBox(height: 4),
+                              _infoRow(
+                                icon: Icons.room,
+                                text:
+                                "Room: ${item['venue'] ?? '-'}",
+                                iconSize: iconSize,
+                                textSize: labelSize,
+                              ),
+                              const SizedBox(height: 4),
+                              _infoRow(
+                                icon: Icons.access_time,
+                                text: "Time: ${item['startTime']} - ${item['endTime']}",
+                                iconSize: iconSize,
+                                textSize: labelSize,
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Icon(Icons.code,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color),
-                              const SizedBox(width: 8),
-                              Text(
-                                  "Code: ${item['subjectCode'] ?? '-'}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.person,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color),
-                              const SizedBox(width: 8),
-                              Text(
-                                  "Teacher: ${item['teacher'] ?? 'TBA'}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.room,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color),
-                              const SizedBox(width: 8),
-                              Text(
-                                  "Room: ${item['room'] ?? '-'}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color),
-                              const SizedBox(width: 8),
-                              Text(
-                                  "Time: ${item['startTime']} - ${item['endTime']}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium)
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
@@ -337,6 +291,29 @@ class _TimetableScreenState extends State<TimetableScreen> {
           )
         ],
       ),
+    );
+  }
+
+  Widget _infoRow({
+    required IconData icon,
+    required String text,
+    required double iconSize,
+    required double textSize,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: iconSize),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: textSize,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

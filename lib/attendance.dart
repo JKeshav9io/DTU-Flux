@@ -72,7 +72,6 @@ class _AttendanceState extends State<Attendance> {
       appBar: AppBar(
         title: Text(
           "Attendance",
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),

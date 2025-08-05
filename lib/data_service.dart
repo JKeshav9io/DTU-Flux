@@ -6,35 +6,26 @@ class DataService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Returns the full student document (including branchId & sectionId)
-  /// Attendance list under the student doc
   Future<Map<String, dynamic>?> fetchLoggedInStudentBaseData() async {
-    try {
-      // 1. Get current user email
+    try{
       final user = _auth.currentUser;
       if (user?.email == null) {
         debugPrint('No authenticated user or email');
         return null;
       }
 
-      // 2. Query students collection where email matches
       final query = await _firestore
           .collection('students')
           .where('email', isEqualTo: user!.email)
           .limit(1)
           .get();
 
-      // 3. Check if we found a match
       if (query.docs.isEmpty) {
         debugPrint('No student found with email: ${user.email}');
         return null;
       }
-
-      // 4. Get the first matching document
       final doc = query.docs.first;
       final data = doc.data();
-
-      // 5. Validate required fields
       if (data['branchId'] == null || data['sectionId'] == null) {
         debugPrint('Student document missing required fields');
         return null;
@@ -49,7 +40,6 @@ class DataService {
   }
 
 
-  /// Attendance list under the student doc
   Future<List<Map<String, dynamic>>> fetchLoggedInStudentAttendance() async {
     try {
       final base = await fetchLoggedInStudentBaseData();
@@ -75,7 +65,6 @@ class DataService {
     }
   }
 
-  /// Performance subcollection
   Future<List<Map<String, dynamic>>> fetchLoggedInStudentPerformance() async {
     try {
       final base = await fetchLoggedInStudentBaseData();
@@ -108,7 +97,6 @@ class DataService {
     }
   }
 
-  /// Timetable under branches/{branchId}/sections/{sectionId}/timetable
   Future<List<Map<String, dynamic>>> fetchTimetable(
       String branchId, String sectionId) async {
     try {
@@ -122,7 +110,7 @@ class DataService {
 
       final list = <Map<String, dynamic>>[];
       for (var d in snap.docs) {
-        final sched = d.data()['schedule'] as List<dynamic>? ?? [];
+        final sched = d.data()['classes'] as List<dynamic>? ?? [];
         for (var slot in sched) {
           if (slot is Map<String, dynamic>) {
             list.add({...slot, 'day': d.id});
@@ -136,7 +124,7 @@ class DataService {
     }
   }
 
-  /// All subjects under a given branch/section
+
   Future<List<Map<String, dynamic>>> fetchSubjects(
       String branchId, String sectionId) async {
     try {
