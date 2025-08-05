@@ -67,11 +67,5 @@ DTU-Flux brings together various academic modules and integrates them into one u
 - **Faculty** features are present in design, but not yet in active use  
 - **Societies** can publish events (currently managed by app developer only)
 
----
-
-> 💡 For detailed technical breakdown, refer to the [System Design Document](#) *(Upload and link it here if needed)*
-
----
-
 Made with ❤️ by **Keshav Jha**  
 📧 [keshav3453@gmail.com](mailto:keshav3453@gmail.com)
