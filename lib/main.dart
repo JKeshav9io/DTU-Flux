@@ -9,9 +9,7 @@ import 'data_populator.dart';
 import 'firebase_options.dart';
 import 'notification_services.dart';
 import 'splash_screen.dart';
-import 'theme.dart'; // <-- Import your AppThemes
-
-//final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+import 'theme.dart'; 
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
