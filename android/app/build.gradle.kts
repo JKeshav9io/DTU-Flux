@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.dtu_connect"
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
