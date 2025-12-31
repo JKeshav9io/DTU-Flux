@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -12,7 +13,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Database Management System",
         "subjectCode": "MC209",
         "faculty": "Ms. Trasha Gupta",
-        "venue": "AB4-307"
+        "venue": "AB4-307",
       },
       {
         "type": "lecture",
@@ -21,7 +22,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Probability & Statistics",
         "subjectCode": "MC205",
         "faculty": "Dr. Devender Kumar",
-        "venue": "AB3-307"
+        "venue": "AB3-307",
       },
       {
         "type": "lab",
@@ -33,19 +34,19 @@ final Map<String, dynamic> weeklyTimetable = {
           {
             "group": "P4",
             "venue": "CL-1",
-            "faculty": "Prof. R. Srivastava & Mr. Puneet K. Pal"
+            "faculty": "Prof. R. Srivastava & Mr. Puneet K. Pal",
           },
           {
             "group": "P5",
             "venue": "CL-2",
-            "faculty": "Dr. Meena Rawat & Ms. Aarti"
+            "faculty": "Dr. Meena Rawat & Ms. Aarti",
           },
           {
             "group": "P6",
             "venue": "CL-4",
-            "faculty": "Mr. Jamkhongam Touthang & Ms. Priya Yadav"
-          }
-        ]
+            "faculty": "Mr. Jamkhongam Touthang & Ms. Priya Yadav",
+          },
+        ],
       },
       {
         "type": "lab",
@@ -57,21 +58,21 @@ final Map<String, dynamic> weeklyTimetable = {
           {
             "group": "P4",
             "venue": "CL-1",
-            "faculty": "Ms. Himani Pokhriyal & Ms. Anjali Aggarwal"
+            "faculty": "Ms. Himani Pokhriyal & Ms. Anjali Aggarwal",
           },
           {
             "group": "P5",
             "venue": "CL-2",
-            "faculty": "Mr. Rohit Raghav & Mr. Aditya Parashar"
+            "faculty": "Mr. Rohit Raghav & Mr. Aditya Parashar",
           },
           {
             "group": "P6",
             "venue": "CL-3",
-            "faculty": "Mr. Kriss Gunjan & Ms. Neetu Malik"
-          }
-        ]
-      }
-    ]
+            "faculty": "Mr. Kriss Gunjan & Ms. Neetu Malik",
+          },
+        ],
+      },
+    ],
   },
 
   "Tuesday": {
@@ -83,7 +84,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Real Analysis",
         "subjectCode": "MC203",
         "faculty": "Ms. Mahima",
-        "venue": "AB3-307"
+        "venue": "AB3-307",
       },
       {
         "type": "lecture",
@@ -92,7 +93,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Real Analysis",
         "subjectCode": "MC203",
         "faculty": "Ms. Mahima",
-        "venue": "AB3-308"
+        "venue": "AB3-308",
       },
       {
         "type": "lecture",
@@ -101,9 +102,9 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Database Management System",
         "subjectCode": "MC209",
         "faculty": "Ms. Trasha Gupta",
-        "venue": "AB3-307"
-      }
-    ]
+        "venue": "AB3-307",
+      },
+    ],
   },
 
   "Wednesday": {
@@ -115,7 +116,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Data Structure",
         "subjectCode": "MC201",
         "faculty": "Dr. Goonjab Jain",
-        "venue": "AB3-307"
+        "venue": "AB3-307",
       },
       {
         "type": "lecture",
@@ -124,7 +125,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Probability & Statistics",
         "subjectCode": "MC205",
         "faculty": "Dr. Devender Kumar",
-        "venue": "AB3-307"
+        "venue": "AB3-307",
       },
       {
         "type": "lecture",
@@ -133,9 +134,9 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Modern Algebra",
         "subjectCode": "MC207",
         "faculty": "Dr. Anshu",
-        "venue": "AB3-307"
-      }
-    ]
+        "venue": "AB3-307",
+      },
+    ],
   },
 
   "Thursday": {
@@ -147,7 +148,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Real Analysis",
         "subjectCode": "MC203",
         "faculty": "Ms. Mahima",
-        "venue": "AB3-307"
+        "venue": "AB3-307",
       },
       {
         "type": "lecture",
@@ -156,7 +157,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Real Analysis",
         "subjectCode": "MC203",
         "faculty": "Ms. Mahima",
-        "venue": "AB3-308"
+        "venue": "AB3-308",
       },
       {
         "type": "lab",
@@ -168,21 +169,21 @@ final Map<String, dynamic> weeklyTimetable = {
           {
             "group": "P4",
             "venue": "CL-1",
-            "faculty": "Dr. Dinesh Udar & Ms. Shiksha Saini"
+            "faculty": "Dr. Dinesh Udar & Ms. Shiksha Saini",
           },
           {
             "group": "P5",
             "venue": "CL-2",
-            "faculty": "Prof. Sangita Kansal & Ms. Anju"
+            "faculty": "Prof. Sangita Kansal & Ms. Anju",
           },
           {
             "group": "P6",
             "venue": "CL-3",
-            "faculty": "Ms. Trasha Gupta & Ms. Aarti"
-          }
-        ]
-      }
-    ]
+            "faculty": "Ms. Trasha Gupta & Ms. Aarti",
+          },
+        ],
+      },
+    ],
   },
 
   "Friday": {
@@ -194,7 +195,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Data Structure",
         "subjectCode": "MC201",
         "faculty": "Dr. Goonjab Jain",
-        "venue": "AB3-307"
+        "venue": "AB3-307",
       },
       {
         "type": "lecture",
@@ -203,7 +204,7 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Data Structure",
         "subjectCode": "MC201",
         "faculty": "Dr. Goonjab Jain",
-        "venue": "AB3-308"
+        "venue": "AB3-308",
       },
       {
         "type": "lecture",
@@ -212,10 +213,10 @@ final Map<String, dynamic> weeklyTimetable = {
         "subjectName": "Modern Algebra",
         "subjectCode": "MC207",
         "faculty": "Dr. Anshu",
-        "venue": "AB3-307"
-      }
-    ]
-  }
+        "venue": "AB3-307",
+      },
+    ],
+  },
 };
 
 Future<void> uploadTimetable() async {
@@ -235,6 +236,6 @@ Future<void> uploadTimetable() async {
         .doc(day)
         .set(data);
 
-    print("Uploaded timetable for $day");
+    debugPrint("Uploaded timetable for $day");
   }
 }

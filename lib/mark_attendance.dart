@@ -174,119 +174,160 @@ class _MarkAttendancePageState extends State<MarkAttendancePage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: padding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Select Subject',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              value: selectedSubjectCode,
-              decoration: InputDecoration(
-                labelText: "Subject",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              onChanged: (value) {
-                final subj = subjects.firstWhere((s) => s['subjectCode'] == value);
-                setState(() {
-                  selectedSubjectCode = subj['subjectCode'];
-                  selectedSubjectName = subj['subjectName'];
-                });
-              },
-              items: subjects
-                  .map(
-                    (subj) => DropdownMenuItem<String>(
-                  value: subj['subjectCode'],
-                  child: Text(subj['subjectName']!,
-                      style: theme.textTheme.bodyMedium),
-                ),
-              )
-                  .toList(),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: markClassCancelled,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.errorContainer,
-                    foregroundColor: theme.colorScheme.onErrorContainer,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+              padding: padding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select Subject',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  child: Text('Class Cancelled',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                          color: theme.colorScheme.onErrorContainer)),
-                ),
-                ElevatedButton(
-                  onPressed: () => markAll(false),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.error,
-                    foregroundColor: theme.colorScheme.onError,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: Text('Class Bunked',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                          color: theme.colorScheme.onError)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text('Student List',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            ),
-            Expanded(
-              child: students.isEmpty
-                  ? Center(child: Text('No students found.', style: theme.textTheme.bodyMedium))
-                  : ListView.builder(
-                itemCount: students.length,
-                itemBuilder: (context, index) {
-                  final student = students[index];
-                  final id = student['id']!;
-                  return ListTile(
-                    leading: Icon(Icons.person, color: theme.iconTheme.color),
-                    title: Text(student['name']!, style: theme.textTheme.bodyMedium),
-                    subtitle: Text(student['roll']!, style: theme.textTheme.bodySmall),
-                    trailing: Switch(
-                      value: attendanceStatus[id]!,
-                      onChanged: (val) => setState(() => attendanceStatus[id] = val),
-                      activeColor: theme.colorScheme.primary,
-                      trackColor: MaterialStateProperty.all(
-                        theme.colorScheme.primary.withOpacity(0.5),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedSubjectCode,
+                    decoration: InputDecoration(
+                      labelText: "Subject",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: publishAttendance,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(
-                  'Publish Attendance',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onPrimary,
+                    onChanged: (value) {
+                      final subj = subjects.firstWhere(
+                        (s) => s['subjectCode'] == value,
+                      );
+                      setState(() {
+                        selectedSubjectCode = subj['subjectCode'];
+                        selectedSubjectName = subj['subjectName'];
+                      });
+                    },
+                    items: subjects
+                        .map(
+                          (subj) => DropdownMenuItem<String>(
+                            value: subj['subjectCode'],
+                            child: Text(
+                              subj['subjectName']!,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: markClassCancelled,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.errorContainer,
+                          foregroundColor: theme.colorScheme.onErrorContainer,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Class Cancelled',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => markAll(false),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.error,
+                          foregroundColor: theme.colorScheme.onError,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Class Bunked',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: theme.colorScheme.onError,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Student List',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: students.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No students found.',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: students.length,
+                            itemBuilder: (context, index) {
+                              final student = students[index];
+                              final id = student['id']!;
+                              return ListTile(
+                                leading: Icon(
+                                  Icons.person,
+                                  color: theme.iconTheme.color,
+                                ),
+                                title: Text(
+                                  student['name']!,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                                subtitle: Text(
+                                  student['roll']!,
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                trailing: Switch(
+                                  value: attendanceStatus[id]!,
+                                  onChanged: (val) => setState(
+                                    () => attendanceStatus[id] = val,
+                                  ),
+                                  activeThumbColor: theme.colorScheme.primary,
+                                  trackColor: WidgetStateProperty.all(
+                                    theme.colorScheme.primary.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: publishAttendance,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Publish Attendance',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

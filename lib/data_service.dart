@@ -7,7 +7,7 @@ class DataService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<Map<String, dynamic>?> fetchLoggedInStudentBaseData() async {
-    try{
+    try {
       final user = _auth.currentUser;
       if (user?.email == null) {
         debugPrint('No authenticated user or email');
@@ -39,7 +39,6 @@ class DataService {
     }
   }
 
-
   Future<List<Map<String, dynamic>>> fetchLoggedInStudentAttendance() async {
     try {
       final base = await fetchLoggedInStudentBaseData();
@@ -55,12 +54,14 @@ class DataService {
           .get();
 
       if (snap.docs.isEmpty) {
-        debugPrint('fetchLoggedInStudentAttendance: No attendance records for student ${base['id']}');
+        debugPrint(
+          'fetchLoggedInStudentAttendance: No attendance records for student ${base['id']}',
+        );
       }
 
       return snap.docs.map((d) => d.data()).toList();
     } catch (e) {
-      print('Error fetching attendance: $e');
+      debugPrint('Error fetching attendance: $e');
       return [];
     }
   }
@@ -82,23 +83,21 @@ class DataService {
               .collection('subjects')
               .get()
               .then((s) => s.docs.map((d) => d.data()).toList());
-          return {
-            'semester': sem.id,
-            ...sem.data(),
-            'subjects': subjects,
-          };
+          return {'semester': sem.id, ...sem.data(), 'subjects': subjects};
         }),
       );
 
       return results;
     } catch (e) {
-      print('Error fetching performance: $e');
+      debugPrint('Error fetching performance: $e');
       return [];
     }
   }
 
   Future<List<Map<String, dynamic>>> fetchTimetable(
-      String branchId, String sectionId) async {
+    String branchId,
+    String sectionId,
+  ) async {
     try {
       final snap = await _firestore
           .collection('branches')
@@ -119,14 +118,15 @@ class DataService {
       }
       return list;
     } catch (e) {
-      print('Error fetching timetable: $e');
+      debugPrint('Error fetching timetable: $e');
       return [];
     }
   }
 
-
   Future<List<Map<String, dynamic>>> fetchSubjects(
-      String branchId, String sectionId) async {
+    String branchId,
+    String sectionId,
+  ) async {
     try {
       final snap = await _firestore
           .collection('branches')
@@ -138,14 +138,17 @@ class DataService {
 
       return snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
     } catch (e) {
-      print('Error fetching subjects: $e');
+      debugPrint('Error fetching subjects: $e');
       return [];
     }
   }
 
   /// Live stream of assignments for one subject
   Stream<List<Map<String, dynamic>>> fetchAssignmentsStream(
-      String branchId, String sectionId, String subjectId) {
+    String branchId,
+    String sectionId,
+    String subjectId,
+  ) {
     try {
       return _firestore
           .collection('branches')
@@ -159,7 +162,7 @@ class DataService {
           .snapshots()
           .map((snap) => snap.docs.map((d) => d.data()).toList());
     } catch (e) {
-      print('Error creating assignments stream: $e');
+      debugPrint('Error creating assignments stream: $e');
       return Stream.value([]);
     }
   }
@@ -171,19 +174,21 @@ class DataService {
           .collection('events')
           .orderBy('dateTime')
           .snapshots()
-          .map((snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList());
+          .map(
+            (snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList(),
+          );
     } catch (e) {
-      print('Error creating events stream: $e');
+      debugPrint('Error creating events stream: $e');
       return Stream.value([]);
     }
   }
 
   /// Fetch assignments for a specific subject with due date filtering
   Future<List<Map<String, dynamic>>> fetchAssignmentsForSubject(
-      String branchId,
-      String sectionId,
-      String subjectId,
-      ) async {
+    String branchId,
+    String sectionId,
+    String subjectId,
+  ) async {
     try {
       final now = Timestamp.now();
       final query = await _firestore
@@ -200,7 +205,7 @@ class DataService {
 
       return query.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print('Error fetching assignments: $e');
+      debugPrint('Error fetching assignments: $e');
       return [];
     }
   }
@@ -216,14 +221,16 @@ class DataService {
           .snapshots()
           .map((snap) => snap.docs.map((d) => d.data()).toList());
     } catch (e) {
-      print('Error creating notifications stream: $e');
+      debugPrint('Error creating notifications stream: $e');
       return Stream.value([]);
     }
   }
 
   /// Fetch CR details for a section
   Future<Map<String, dynamic>?> fetchCrDetails(
-      String branchId, String sectionId) async {
+    String branchId,
+    String sectionId,
+  ) async {
     try {
       final doc = await _firestore
           .collection('branches')
@@ -237,7 +244,7 @@ class DataService {
       }
       return null;
     } catch (e) {
-      print('Error fetching CR details: $e');
+      debugPrint('Error fetching CR details: $e');
       return null;
     }
   }
