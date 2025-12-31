@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dtu_connect/pdf_image_viewer.dart';
 import 'package:flutter/material.dart';
-import 'package:dtu_connect/schedule.dart' hide DataService;
+import 'package:dtu_connect/schedule.dart';
 import 'package:dtu_connect/alerts.dart';
 import 'package:dtu_connect/assignment.dart';
 import 'package:dtu_connect/attendance.dart';
@@ -12,11 +12,8 @@ import 'package:dtu_connect/academic_performance.dart';
 import 'cr_panel.dart';
 import 'package:dtu_connect/data_service.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
-
-import 'data_populator.dart';
 
 // Cache Manager for data caching and automatic updates
 class CacheManager {
@@ -76,7 +73,8 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> with AutomaticKeepAliveClientMixin {
+class _DashboardState extends State<Dashboard>
+    with AutomaticKeepAliveClientMixin {
   int _selectedIndex = 0;
   bool isLoading = true;
   Map<String, dynamic>? _student;
@@ -95,7 +93,9 @@ class _DashboardState extends State<Dashboard> with AutomaticKeepAliveClientMixi
 
   Future<void> loadStudentData() async {
     // Check cache first
-    final cachedStudent = _cacheManager.getCachedData<Map<String, dynamic>>('student_data');
+    final cachedStudent = _cacheManager.getCachedData<Map<String, dynamic>>(
+      'student_data',
+    );
     if (cachedStudent != null) {
       setState(() {
         _student = cachedStudent;
@@ -131,9 +131,9 @@ class _DashboardState extends State<Dashboard> with AutomaticKeepAliveClientMixi
           isLoading = false;
           _student = null;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -154,7 +154,10 @@ class _DashboardState extends State<Dashboard> with AutomaticKeepAliveClientMixi
   String _formatStudentName(String name) {
     final parts = name.trim().split(' ');
     if (parts.length <= 2) return name;
-    final initials = parts.sublist(0, parts.length - 1).map((p) => '${p[0].toUpperCase()}.').join();
+    final initials = parts
+        .sublist(0, parts.length - 1)
+        .map((p) => '${p[0].toUpperCase()}.')
+        .join();
     return '$initials ${parts.last}';
   }
 
@@ -173,80 +176,87 @@ class _DashboardState extends State<Dashboard> with AutomaticKeepAliveClientMixi
     final isWide = screenWidth > 900;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: _selectedIndex == 0
           ? AppBar(
-        title: isLoading || student == null
-            ? const SizedBox(height: 20, child: CircularProgressIndicator())
-            : Text(
-          'Welcome, ${_formatStudentName(student['name'] ?? '')}',
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        backgroundColor: theme.colorScheme.primary,
-        iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
-        elevation: 0,
-        leading: (_student != null && student?['photoURL'] != null)
-            ? Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundImage: NetworkImage(student?['photoURL']),
-          ),
-        )
-            : const CircleAvatar(
-          child: Icon(Icons.account_circle),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.admin_panel_settings),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CrPanel()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AlertsScreen()));
-            },
-          ),
-        ],
-      )
+              title: isLoading || student == null
+                  ? const SizedBox(
+                      height: 20,
+                      child: CircularProgressIndicator(),
+                    )
+                  : Text(
+                      'Welcome, ${_formatStudentName(student['name'] ?? '')}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+              backgroundColor: theme.colorScheme.primary,
+              iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
+              elevation: 0,
+              leading: (_student != null && student?['photoURL'] != null)
+                  ? Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(student?['photoURL']),
+                      ),
+                    )
+                  : const CircleAvatar(child: Icon(Icons.account_circle)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.admin_panel_settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CrPanel()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AlertsScreen()),
+                    );
+                  },
+                ),
+              ],
+            )
           : null,
       body: isLoading
           ? const DashboardShimmer()
           : LayoutBuilder(
-        builder: (context, constraints) {
-          if (isWide) {
-            return Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    color: theme.colorScheme.surface,
-                    child: _screens[_selectedIndex],
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    color: theme.colorScheme.background,
-                    child: ProfilePage(studentData: student!),
-                  ),
-                ),
-              ],
-            );
-          } else {
-            return _screens[_selectedIndex];
-          }
-        },
-      ),
+              builder: (context, constraints) {
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          color: theme.colorScheme.surface,
+                          child: _screens[_selectedIndex],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          color: theme.colorScheme.surface,
+                          child: ProfilePage(studentData: student!),
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return _screens[_selectedIndex];
+                }
+              },
+            ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.5),
+        unselectedItemColor: theme.colorScheme.onSurface.withValues(alpha: 0.5),
         showUnselectedLabels: true,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -254,7 +264,10 @@ class _DashboardState extends State<Dashboard> with AutomaticKeepAliveClientMixi
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Academics'),
           BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Alerts'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Alerts',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -272,7 +285,11 @@ class HomeScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isWide = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
-    final crossAxisCount = isWide ? 8 : isTablet ? 6 : 4;
+    final crossAxisCount = isWide
+        ? 8
+        : isTablet
+        ? 6
+        : 4;
     final branchId = student['branchId'];
     final sectionId = student['sectionId'];
     final studentId = student['id'] ?? '';
@@ -287,9 +304,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: TodayAttendanceCard(studentId: studentId),
-              ),
+              Expanded(child: TodayAttendanceCard(studentId: studentId)),
               const SizedBox(width: 10),
               Expanded(
                 child: NextClassCard(branchId: branchId, sectionId: sectionId),
@@ -297,7 +312,12 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Text("Quick Actions", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            "Quick Actions",
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 10),
           GridView.count(
             shrinkWrap: true,
@@ -308,25 +328,47 @@ class HomeScreen extends StatelessWidget {
             childAspectRatio: isWide ? 1.2 : 1,
             children: [
               _quickActionButton(context, Icons.check, "Attendance", () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => Attendance()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => Attendance()),
+                );
               }),
               _quickActionButton(context, Icons.assignment, "Assignment", () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const AssignmentScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AssignmentScreen()),
+                );
               }),
               _quickActionButton(context, Icons.schedule, "Schedule", () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TimetableScreen()),
+                );
               }),
               _quickActionButton(context, Icons.event, "Events", () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const EventsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EventsScreen()),
+                );
               }),
             ],
           ),
           const SizedBox(height: 20),
-          Text("Upcoming Assignments", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            "Upcoming Assignments",
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 10),
           UpcomingAssignmentsCard(branchId: branchId, sectionId: sectionId),
           const SizedBox(height: 20),
-          Text("Campus Events", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            "Campus Events",
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 10),
           const CampusEventsCard(),
         ],
@@ -344,7 +386,8 @@ class TodayAttendanceCard extends StatefulWidget {
   State<TodayAttendanceCard> createState() => _TodayAttendanceCardState();
 }
 
-class _TodayAttendanceCardState extends State<TodayAttendanceCard> with AutomaticKeepAliveClientMixin {
+class _TodayAttendanceCardState extends State<TodayAttendanceCard>
+    with AutomaticKeepAliveClientMixin {
   final CacheManager _cacheManager = CacheManager();
   final DataService _dataService = DataService();
 
@@ -355,11 +398,19 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
   Widget build(BuildContext context) {
     super.build(context);
     if (widget.studentId.isEmpty) {
-      return _infoCard(context, title: "Today's Attendance", value: "No student ID", progress: 0, valueColor: Colors.red);
+      return _infoCard(
+        context,
+        title: "Today's Attendance",
+        value: "No student ID",
+        progress: 0,
+        valueColor: Colors.red,
+      );
     }
 
     final cacheKey = 'attendance_${widget.studentId}';
-    final cachedData = _cacheManager.getCachedData<List<Map<String, dynamic>>>(cacheKey);
+    final cachedData = _cacheManager.getCachedData<List<Map<String, dynamic>>>(
+      cacheKey,
+    );
 
     if (cachedData != null) {
       return _buildAttendanceCard(cachedData);
@@ -369,7 +420,13 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
       future: _dataService.fetchLoggedInStudentAttendance(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return _infoCard(context, title: "Today's Attendance", value: "Loading...", progress: 0, valueColor: Colors.green);
+          return _infoCard(
+            context,
+            title: "Today's Attendance",
+            value: "Loading...",
+            progress: 0,
+            valueColor: Colors.green,
+          );
         }
         if (snapshot.hasError) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -379,7 +436,13 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
               );
             }
           });
-          return _infoCard(context, title: "Today's Attendance", value: "Error", progress: 0, valueColor: Colors.red);
+          return _infoCard(
+            context,
+            title: "Today's Attendance",
+            value: "Error",
+            progress: 0,
+            valueColor: Colors.red,
+          );
         }
 
         final data = snapshot.data ?? [];
@@ -391,16 +454,24 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
 
   Widget _buildAttendanceCard(List<Map<String, dynamic>> data) {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final allTodayHeld = data.where((a) =>
-    a['date'] == today && a['held'] == 'conducted'
-    ).toList();
+    final allTodayHeld = data
+        .where((a) => a['date'] == today && a['held'] == 'conducted')
+        .toList();
 
-    final presentToday = allTodayHeld.where((a) => a['status'] == 'present').toList();
+    final presentToday = allTodayHeld
+        .where((a) => a['status'] == 'present')
+        .toList();
     final totalHeld = allTodayHeld.length;
     final totalPresent = presentToday.length;
 
     if (totalHeld == 0) {
-      return _infoCard(context, title: "Today's Attendance", value: "No class", progress: 0, valueColor: Colors.grey);
+      return _infoCard(
+        context,
+        title: "Today's Attendance",
+        value: "No class",
+        progress: 0,
+        valueColor: Colors.grey,
+      );
     }
 
     final percent = totalPresent / totalHeld;
@@ -420,7 +491,12 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Today's Attendance", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            "Today's Attendance",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 5),
           Row(
             children: [
@@ -434,7 +510,10 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
               const SizedBox(width: 5),
               Text(
                 '${(percent * 100).toStringAsFixed(0)}%',
-                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.green, fontWeight: FontWeight.bold),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -449,13 +528,18 @@ class _TodayAttendanceCardState extends State<TodayAttendanceCard> with Automati
 class NextClassCard extends StatefulWidget {
   final String branchId;
   final String sectionId;
-  const NextClassCard({super.key, required this.branchId, required this.sectionId});
+  const NextClassCard({
+    super.key,
+    required this.branchId,
+    required this.sectionId,
+  });
 
   @override
   State<NextClassCard> createState() => _NextClassCardState();
 }
 
-class _NextClassCardState extends State<NextClassCard> with AutomaticKeepAliveClientMixin {
+class _NextClassCardState extends State<NextClassCard>
+    with AutomaticKeepAliveClientMixin {
   final CacheManager _cacheManager = CacheManager();
   final DataService _dataService = DataService();
 
@@ -466,7 +550,9 @@ class _NextClassCardState extends State<NextClassCard> with AutomaticKeepAliveCl
   Widget build(BuildContext context) {
     super.build(context);
     final cacheKey = 'timetable_${widget.branchId}_${widget.sectionId}';
-    final cachedData = _cacheManager.getCachedData<List<Map<String, dynamic>>>(cacheKey);
+    final cachedData = _cacheManager.getCachedData<List<Map<String, dynamic>>>(
+      cacheKey,
+    );
 
     if (cachedData != null) {
       return _buildNextClassCard(cachedData);
@@ -513,7 +599,7 @@ class _NextClassCardState extends State<NextClassCard> with AutomaticKeepAliveCl
     Map<String, dynamic>? nextClass;
     for (var slot in todaySlots) {
       final classTime = _parseTime(slot['startTime']);
-      if (classTime != null && classTime.isAfter(now)) {
+      if (classTime.isAfter(now)) {
         nextClass = slot;
         break;
       }
@@ -539,18 +625,23 @@ class _NextClassCardState extends State<NextClassCard> with AutomaticKeepAliveCl
   }
 }
 
-
 // Upcoming Assignments Card with caching
 class UpcomingAssignmentsCard extends StatefulWidget {
   final String branchId;
   final String sectionId;
-  const UpcomingAssignmentsCard({super.key, required this.branchId, required this.sectionId});
+  const UpcomingAssignmentsCard({
+    super.key,
+    required this.branchId,
+    required this.sectionId,
+  });
 
   @override
-  State<UpcomingAssignmentsCard> createState() => _UpcomingAssignmentsCardState();
+  State<UpcomingAssignmentsCard> createState() =>
+      _UpcomingAssignmentsCardState();
 }
 
-class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard> with AutomaticKeepAliveClientMixin {
+class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard>
+    with AutomaticKeepAliveClientMixin {
   final CacheManager _cacheManager = CacheManager();
   final DataService _dataService = DataService();
 
@@ -561,7 +652,8 @@ class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard> with 
   Widget build(BuildContext context) {
     super.build(context);
     final subjectsCacheKey = 'subjects_${widget.branchId}_${widget.sectionId}';
-    final cachedSubjects = _cacheManager.getCachedData<List<Map<String, dynamic>>>(subjectsCacheKey);
+    final cachedSubjects = _cacheManager
+        .getCachedData<List<Map<String, dynamic>>>(subjectsCacheKey);
 
     if (cachedSubjects != null) {
       return _buildAssignmentsFromSubjects(cachedSubjects);
@@ -602,8 +694,10 @@ class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard> with 
   }
 
   Widget _buildAssignmentsFromSubjects(List<Map<String, dynamic>> subjects) {
-    final assignmentsCacheKey = 'assignments_${widget.branchId}_${widget.sectionId}';
-    final cachedAssignments = _cacheManager.getCachedData<List<Map<String, dynamic>>>(assignmentsCacheKey);
+    final assignmentsCacheKey =
+        'assignments_${widget.branchId}_${widget.sectionId}';
+    final cachedAssignments = _cacheManager
+        .getCachedData<List<Map<String, dynamic>>>(assignmentsCacheKey);
 
     if (cachedAssignments != null) {
       return _buildAssignmentsList(cachedAssignments);
@@ -640,7 +734,11 @@ class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard> with 
 
   Widget _buildAssignmentsList(List<Map<String, dynamic>> assignments) {
     if (assignments.isEmpty) {
-      return _assignmentCard(context, title: "No upcoming assignments", due: "");
+      return _assignmentCard(
+        context,
+        title: "No upcoming assignments",
+        due: "",
+      );
     }
 
     return Column(
@@ -651,7 +749,9 @@ class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard> with 
         String formattedDue = '';
         if (dueDate != null) {
           if (dueDate is Timestamp) {
-            formattedDue = DateFormat.yMMMMd().add_jm().format(dueDate.toDate());
+            formattedDue = DateFormat.yMMMMd().add_jm().format(
+              dueDate.toDate(),
+            );
           } else if (dueDate is DateTime) {
             formattedDue = DateFormat.yMMMMd().add_jm().format(dueDate);
           } else if (dueDate is String) {
@@ -669,19 +769,32 @@ class _UpcomingAssignmentsCardState extends State<UpcomingAssignmentsCard> with 
     );
   }
 
-  Future<List<Map<String, dynamic>>> _fetchUpcomingAssignments(List<Map<String, dynamic>> subjects) async {
+  Future<List<Map<String, dynamic>>> _fetchUpcomingAssignments(
+    List<Map<String, dynamic>> subjects,
+  ) async {
     final now = DateTime.now();
     List<Map<String, dynamic>> allAssignments = [];
     for (var subj in subjects) {
       final subjectId = subj['id'];
-      final assigns = await _dataService.fetchAssignmentsForSubject(widget.branchId, widget.sectionId, subjectId);
+      final assigns = await _dataService.fetchAssignmentsForSubject(
+        widget.branchId,
+        widget.sectionId,
+        subjectId,
+      );
       for (var a in assigns) {
-        if (a['dueDate'] != null && (a['dueDate'] as Timestamp).toDate().isAfter(now)) {
-          allAssignments.add({...a, 'subjectName': subj['subjectName'] ?? subj['id']});
+        if (a['dueDate'] != null &&
+            (a['dueDate'] as Timestamp).toDate().isAfter(now)) {
+          allAssignments.add({
+            ...a,
+            'subjectName': subj['subjectName'] ?? subj['id'],
+          });
         }
       }
     }
-    allAssignments.sort((a, b) => (a['dueDate'] as Timestamp).compareTo(b['dueDate'] as Timestamp));
+    allAssignments.sort(
+      (a, b) =>
+          (a['dueDate'] as Timestamp).compareTo(b['dueDate'] as Timestamp),
+    );
     return allAssignments;
   }
 }
@@ -693,7 +806,8 @@ class CampusEventsCard extends StatefulWidget {
   State<CampusEventsCard> createState() => _CampusEventsCardState();
 }
 
-class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepAliveClientMixin {
+class _CampusEventsCardState extends State<CampusEventsCard>
+    with AutomaticKeepAliveClientMixin {
   final CacheManager _cacheManager = CacheManager();
   List<Map<String, dynamic>> events = [];
   bool isLoading = true;
@@ -711,7 +825,8 @@ class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepA
 
   Future<void> _loadEvents() async {
     final cacheKey = 'campus_events';
-    final cachedEvents = _cacheManager.getCachedData<List<Map<String, dynamic>>>(cacheKey);
+    final cachedEvents = _cacheManager
+        .getCachedData<List<Map<String, dynamic>>>(cacheKey);
 
     if (cachedEvents != null) {
       if (mounted) {
@@ -748,12 +863,19 @@ class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepA
 
             if (items != null && items.isNotEmpty) {
               final List<Map<String, dynamic>> filtered = items
-                  .where((e) =>
-              (e["summary"] as String?)?.toLowerCase().contains("mvp") ?? false)
-                  .map((e) => {
-                "title": e["summary"] ?? "",
-                "date": e["start"]["date"] ?? "",
-              })
+                  .where(
+                    (e) =>
+                        (e["summary"] as String?)?.toLowerCase().contains(
+                          "mvp",
+                        ) ??
+                        false,
+                  )
+                  .map(
+                    (e) => {
+                      "title": e["summary"] ?? "",
+                      "date": e["start"]["date"] ?? "",
+                    },
+                  )
                   .toList();
 
               _cacheManager.setCachedData('campus_events', filtered);
@@ -783,39 +905,30 @@ class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepA
     super.build(context);
 
     if (isLoading) {
-      return _eventCard(
-        context,
-        imageUrl: "",
-        title: "",
-        date: "",
-      );
+      return _eventCard(context, imageUrl: "", title: "", date: "");
     }
 
     return Column(
       children: [
         events.isEmpty
-            ? _eventCard(
-          context,
-          imageUrl: "",
-          title: "",
-          date: "",
-        )
+            ? _eventCard(context, imageUrl: "", title: "", date: "")
             : _eventCard(
-          context,
-          imageUrl: "https://img.freepik.com/free-vector/flat-design-illustration-people-joining-online-webinar_23-2149171184.jpg",
-          title: events[0]["title"] ?? "",
-          date: events[0]["date"] ?? "",
-        ),
+                context,
+                imageUrl:
+                    "https://img.freepik.com/free-vector/flat-design-illustration-people-joining-online-webinar_23-2149171184.jpg",
+                title: events[0]["title"] ?? "",
+                date: events[0]["date"] ?? "",
+              ),
       ],
     );
   }
 
   Widget _eventCard(
-      BuildContext context, {
-        required String imageUrl,
-        required String title,
-        required String date,
-      }) {
+    BuildContext context, {
+    required String imageUrl,
+    required String title,
+    required String date,
+  }) {
     final theme = Theme.of(context);
     final isEmpty = title.trim().isEmpty;
 
@@ -828,7 +941,9 @@ class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepA
         children: [
           if (!isEmpty && imageUrl.isNotEmpty)
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: Image.network(
                 imageUrl,
                 width: double.infinity,
@@ -845,39 +960,53 @@ class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepA
             padding: const EdgeInsets.all(12),
             child: isEmpty
                 ? Row(
-              children: [
-                const Icon(Icons.event_busy, size: 40, color: Colors.grey),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.event_busy,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "No MVP Events",
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Stay tuned! Upcoming campus events will appear here soon.",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.hintColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("No MVP Events",
-                          style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
                       Text(
-                        "Stay tuned! Upcoming campus events will appear here soon.",
+                        title,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        date,
                         style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.hintColor),
+                          color: theme.hintColor,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            )
-                : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                Text(date,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.hintColor)),
-              ],
-            ),
           ),
         ],
       ),
@@ -885,8 +1014,13 @@ class _CampusEventsCardState extends State<CampusEventsCard> with AutomaticKeepA
   }
 }
 
-Widget _infoCard(BuildContext context,
-    {required String title, required String value, required double progress, required Color valueColor}) {
+Widget _infoCard(
+  BuildContext context, {
+  required String title,
+  required String value,
+  required double progress,
+  required Color valueColor,
+}) {
   final theme = Theme.of(context);
   return Container(
     padding: const EdgeInsets.all(12),
@@ -902,7 +1036,12 @@ Widget _infoCard(BuildContext context,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 5),
         Row(
           children: [
@@ -914,7 +1053,13 @@ Widget _infoCard(BuildContext context,
               ),
             ),
             const SizedBox(width: 5),
-            Text(value, style: theme.textTheme.bodyMedium?.copyWith(color: valueColor, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: valueColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ],
@@ -922,7 +1067,11 @@ Widget _infoCard(BuildContext context,
   );
 }
 
-Widget _nextClassCard(BuildContext context, {required String time, required String subject}) {
+Widget _nextClassCard(
+  BuildContext context, {
+  required String time,
+  required String subject,
+}) {
   final theme = Theme.of(context);
   return Container(
     padding: const EdgeInsets.all(12),
@@ -938,16 +1087,34 @@ Widget _nextClassCard(BuildContext context, {required String time, required Stri
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Next Class", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          "Next Class",
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 5),
-        Text(time, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-        Text(subject, style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+        Text(
+          time,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          subject,
+          style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+        ),
       ],
     ),
   );
 }
 
-Widget _quickActionButton(BuildContext context, IconData icon, String label, VoidCallback onTap) {
+Widget _quickActionButton(
+  BuildContext context,
+  IconData icon,
+  String label,
+  VoidCallback onTap,
+) {
   final theme = Theme.of(context);
   return GestureDetector(
     onTap: onTap,
@@ -973,49 +1140,66 @@ Widget _quickActionButton(BuildContext context, IconData icon, String label, Voi
   );
 }
 
-Widget _eventCard(BuildContext context, {required String imageUrl, required String title, required String date}) {
-  final theme = Theme.of(context);
-  return Card(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (imageUrl.isNotEmpty)
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.network(imageUrl, width: double.infinity, height: 200, fit: BoxFit.cover),
-          ),
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 5),
-              Text(date, style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
+// Unused - kept for future use
+// Widget _eventCard(BuildContext context, {required String imageUrl, required String title, required String date}) {
+//   final theme = Theme.of(context);
+//   return Card(
+//     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//     child: Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         if (imageUrl.isNotEmpty)
+//           ClipRRect(
+//             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+//             child: Image.network(imageUrl, width: double.infinity, height: 200, fit: BoxFit.cover),
+//           ),
+//         Padding(
+//           padding: const EdgeInsets.all(12),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(title, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+//               const SizedBox(height: 5),
+//               Text(date, style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+//             ],
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
 
-Widget _assignmentCard(BuildContext context, {required String title, required String due, String? fileUrl, String? fileName}) {
+Widget _assignmentCard(
+  BuildContext context, {
+  required String title,
+  required String due,
+  String? fileUrl,
+  String? fileName,
+}) {
   final theme = Theme.of(context);
   return Card(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     child: ListTile(
-      title: Text(title, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+      title: Text(
+        title,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       subtitle: Text("Due: $due", style: theme.textTheme.bodySmall),
       trailing: ElevatedButton(
         onPressed: fileUrl != null && fileName != null
             ? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FileViewerScreen(fileUrl: fileUrl, fileName: "${fileName}.pdf")),
-          );
-        }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FileViewerScreen(
+                      fileUrl: fileUrl,
+                      fileName: "$fileName.pdf",
+                    ),
+                  ),
+                );
+              }
             : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
@@ -1028,32 +1212,32 @@ Widget _assignmentCard(BuildContext context, {required String title, required St
   );
 }
 
-void _launchURL(BuildContext context, String? url) async {
-  if (url == null || url.isEmpty) {
-    _showSnack(context, 'No link provided');
-    return;
-  }
+// Unused - kept for future use
+// void _launchURL(BuildContext context, String? url) async {
+//   if (url == null || url.isEmpty) {
+//     _showSnack(context, 'No link provided');
+//     return;
+//   }
+//
+//   final uri = Uri.tryParse(url);
+//   if (uri == null) {
+//     _showSnack(context, 'Invalid URL');
+//     return;
+//   }
+//
+//   try {
+//     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+//       _showSnack(context, 'Could not launch');
+//     }
+//   } catch (_) {
+//     _showSnack(context, 'Error opening link');
+//   }
+// }
 
-  final uri = Uri.tryParse(url);
-  if (uri == null) {
-    _showSnack(context, 'Invalid URL');
-    return;
-  }
-
-  try {
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      _showSnack(context, 'Could not launch');
-    }
-  } catch (_) {
-    _showSnack(context, 'Error opening link');
-  }
-}
-
-void _showSnack(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(msg)),
-  );
-}
+// Unused - kept for future use
+// void _showSnack(BuildContext context, String msg) {
+//   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+// }
 
 class DashboardShimmer extends StatelessWidget {
   const DashboardShimmer({super.key});
@@ -1092,7 +1276,10 @@ class DashboardShimmer extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            children: List.generate(isWide ? 6 : 4, (i) => _shimmerQuickAction(theme)),
+            children: List.generate(
+              isWide ? 6 : 4,
+              (i) => _shimmerQuickAction(theme),
+            ),
           ),
           const SizedBox(height: 20),
           Shimmer.fromColors(
@@ -1163,18 +1350,10 @@ class DashboardShimmer extends StatelessWidget {
                     : Colors.grey.shade700,
               ),
             ),
-            child: Container(
-              width: 30,
-              height: 30,
-              color: theme.dividerColor,
-            ),
+            child: Container(width: 30, height: 30, color: theme.dividerColor),
           ),
           const SizedBox(height: 5),
-          Container(
-            height: 10,
-            width: 40,
-            color: theme.dividerColor,
-          ),
+          Container(height: 10, width: 40, color: theme.dividerColor),
         ],
       ),
     );

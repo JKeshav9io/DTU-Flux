@@ -159,7 +159,7 @@ class _AcademicPerformanceScreenState extends State<AcademicPerformanceScreen> {
             subjectData: subjectData,
             isWide: isWide,
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -201,7 +201,7 @@ class _AcademicPerformanceScreenState extends State<AcademicPerformanceScreen> {
                 textAlign: TextAlign.center,
               ),
               progressColor: theme.colorScheme.primary,
-              backgroundColor: theme.colorScheme.surfaceVariant,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
               circularStrokeCap: CircularStrokeCap.round,
             ),
           ],

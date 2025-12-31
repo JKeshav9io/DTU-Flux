@@ -229,7 +229,7 @@ class _UpdateMarksPageState extends State<UpdateMarksPage> {
               Text('Subject', style: theme.textTheme.labelLarge),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: selectedSubject,
+                initialValue: selectedSubject,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: theme.colorScheme.surface,

@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AlertsScreen extends StatefulWidget {
-  const AlertsScreen({Key? key}) : super(key: key);
+  const AlertsScreen({super.key});
 
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
@@ -22,8 +22,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
   late SharedPreferences _prefs;
   bool _isLoading = true;
   bool _isRefreshing = false;
-  bool _isSearching = false;         // NEW
-  String _searchText = '';           // NEW
+  bool _isSearching = false; // NEW
+  String _searchText = ''; // NEW
 
   StreamSubscription<QuerySnapshot>? _notifSub;
   StreamSubscription<QuerySnapshot>? _eventSub;
@@ -71,7 +71,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     final branchId = data['branchId']?.toString() ?? 'BR';
     final sectionId = data['sectionId']?.toString() ?? 'S1';
 
-    _subscriptionTopic = '${year}_${branchId}_${sectionId}';
+    _subscriptionTopic = '${year}_${branchId}_$sectionId';
     _notificationsKey = 'notifs_$_subscriptionTopic';
     _eventsKey = 'events_$_subscriptionTopic';
 
@@ -90,8 +90,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     }
     final eventsJson = _prefs.getString(_eventsKey);
     if (eventsJson != null) {
-      _events = (json.decode(eventsJson) as List)
-          .cast<Map<String, dynamic>>();
+      _events = (json.decode(eventsJson) as List).cast<Map<String, dynamic>>();
     }
   }
 
@@ -103,31 +102,34 @@ class _AlertsScreenState extends State<AlertsScreen> {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snap) async {
-      _notifications = snap.docs.map((doc) {
-        final m = doc.data();
-        final rawTs = m['timestamp'];
-        DateTime ts;
-        if (rawTs is Timestamp) {
-          ts = rawTs.toDate();
-        } else if (rawTs is int) {
-          ts = DateTime.fromMillisecondsSinceEpoch(rawTs);
-        } else if (rawTs is String) {
-          ts = DateTime.tryParse(rawTs) ?? DateTime.now();
-        } else {
-          ts = DateTime.now();
-        }
-        return {
-          'title': m['title'] ?? 'No Title',
-          'body': m['body'] ?? '',
-          'timestamp': ts.millisecondsSinceEpoch,
-          'attachment': m['attachmentUrl'],
-          'type': m['type'] ?? 'Custom Notification',
-        };
-      }).toList();
+          _notifications = snap.docs.map((doc) {
+            final m = doc.data();
+            final rawTs = m['timestamp'];
+            DateTime ts;
+            if (rawTs is Timestamp) {
+              ts = rawTs.toDate();
+            } else if (rawTs is int) {
+              ts = DateTime.fromMillisecondsSinceEpoch(rawTs);
+            } else if (rawTs is String) {
+              ts = DateTime.tryParse(rawTs) ?? DateTime.now();
+            } else {
+              ts = DateTime.now();
+            }
+            return {
+              'title': m['title'] ?? 'No Title',
+              'body': m['body'] ?? '',
+              'timestamp': ts.millisecondsSinceEpoch,
+              'attachment': m['attachmentUrl'],
+              'type': m['type'] ?? 'Custom Notification',
+            };
+          }).toList();
 
-      await _prefs.setString(_notificationsKey, json.encode(_notifications));
-      if (mounted) setState(() {});
-    });
+          await _prefs.setString(
+            _notificationsKey,
+            json.encode(_notifications),
+          );
+          if (mounted) setState(() {});
+        });
   }
 
   void _listenEvents() {
@@ -138,32 +140,32 @@ class _AlertsScreenState extends State<AlertsScreen> {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snap) async {
-      _events = snap.docs.map((doc) {
-        final m = doc.data();
-        final rawTs = m['timestamp'];
-        DateTime ts;
-        if (rawTs is Timestamp) {
-          ts = rawTs.toDate();
-        } else if (rawTs is int) {
-          ts = DateTime.fromMillisecondsSinceEpoch(rawTs);
-        } else if (rawTs is String) {
-          ts = DateTime.tryParse(rawTs) ?? DateTime.now();
-        } else {
-          ts = DateTime.now();
-        }
-        return {
-          'id': doc.id,
-          'title': m['title'] ?? 'No Title',
-          'body': m['body'] ?? '',
-          'timestamp': ts.millisecondsSinceEpoch,
-          'type': 'event',
-          'attachment': m['attachmentUrl'],
-        };
-      }).toList();
+          _events = snap.docs.map((doc) {
+            final m = doc.data();
+            final rawTs = m['timestamp'];
+            DateTime ts;
+            if (rawTs is Timestamp) {
+              ts = rawTs.toDate();
+            } else if (rawTs is int) {
+              ts = DateTime.fromMillisecondsSinceEpoch(rawTs);
+            } else if (rawTs is String) {
+              ts = DateTime.tryParse(rawTs) ?? DateTime.now();
+            } else {
+              ts = DateTime.now();
+            }
+            return {
+              'id': doc.id,
+              'title': m['title'] ?? 'No Title',
+              'body': m['body'] ?? '',
+              'timestamp': ts.millisecondsSinceEpoch,
+              'type': 'event',
+              'attachment': m['attachmentUrl'],
+            };
+          }).toList();
 
-      await _prefs.setString(_eventsKey, json.encode(_events));
-      if (mounted) setState(() {});
-    });
+          await _prefs.setString(_eventsKey, json.encode(_events));
+          if (mounted) setState(() {});
+        });
   }
 
   Future<void> _onRefresh() async {
@@ -201,44 +203,47 @@ class _AlertsScreenState extends State<AlertsScreen> {
     final filteredItems = _searchText.isEmpty
         ? allItems
         : allItems.where((i) {
-      final title = (i['title'] as String).toLowerCase();
-      final body = (i['body'] as String).toLowerCase();
-      return title.contains(_searchText.toLowerCase()) ||
-          body.contains(_searchText.toLowerCase());
-    }).toList();
+            final title = (i['title'] as String).toLowerCase();
+            final body = (i['body'] as String).toLowerCase();
+            return title.contains(_searchText.toLowerCase()) ||
+                body.contains(_searchText.toLowerCase());
+          }).toList();
 
     // Group by date
-    final dates = filteredItems
-        .map((i) => DateTime.fromMillisecondsSinceEpoch(i['timestamp']))
-        .map((d) => '${d.day}-${d.month}-${d.year}')
-        .toSet()
-        .toList()
-      ..sort((a, b) {
-        final pa = a.split('-').map(int.parse).toList();
-        final pb = b.split('-').map(int.parse).toList();
-        return DateTime(pb[2], pb[1], pb[0])
-            .compareTo(DateTime(pa[2], pa[1], pa[0]));
-      });
+    final dates =
+        filteredItems
+            .map((i) => DateTime.fromMillisecondsSinceEpoch(i['timestamp']))
+            .map((d) => '${d.day}-${d.month}-${d.year}')
+            .toSet()
+            .toList()
+          ..sort((a, b) {
+            final pa = a.split('-').map(int.parse).toList();
+            final pb = b.split('-').map(int.parse).toList();
+            return DateTime(
+              pb[2],
+              pb[1],
+              pb[0],
+            ).compareTo(DateTime(pa[2], pa[1], pa[0]));
+          });
 
     List<Map<String, dynamic>> itemsForDate(String label) {
       return filteredItems.where((i) {
         final d = DateTime.fromMillisecondsSinceEpoch(i['timestamp']);
         return '${d.day}-${d.month}-${d.year}' == label;
-      }).toList()
-        ..sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+      }).toList()..sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
     }
 
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
             ? TextField(
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Search alerts…',
-            border: InputBorder.none,
-          ),
-          onChanged: (val) => setState(() => _searchText = val),
-        )
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search alerts…',
+                  border: InputBorder.none,
+                ),
+                onChanged: (val) => setState(() => _searchText = val),
+              )
             : const Text('Alerts & Events'),
         actions: [
           IconButton(
@@ -253,13 +258,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
           IconButton(
             icon: _isRefreshing
                 ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.onPrimary,
-              ),
-            )
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.colorScheme.onPrimary,
+                    ),
+                  )
                 : Icon(Icons.refresh, color: theme.colorScheme.onPrimary),
             onPressed: _isRefreshing ? null : _onRefresh,
             tooltip: 'Refresh',
@@ -267,32 +272,36 @@ class _AlertsScreenState extends State<AlertsScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
+          ? Center(
+              child: CircularProgressIndicator(
+                color: theme.colorScheme.primary,
+              ),
+            )
           : filteredItems.isEmpty
           ? _buildEmptyState(theme)
           : RefreshIndicator(
-        onRefresh: _onRefresh,
-        color: theme.colorScheme.primary,
-        child: ListView.builder(
-          padding: padding,
-          itemCount: dates
-              .map((d) => 1 + itemsForDate(d).length)
-              .fold(0, (sum, len) => sum! + len),
-          itemBuilder: (_, idx) {
-            int cursor = 0;
-            for (var date in dates) {
-              if (idx == cursor) return _buildDateDivider(date, theme);
-              cursor++;
-              final items = itemsForDate(date);
-              for (var item in items) {
-                if (idx == cursor) return _buildCard(item, theme, isWide);
-                cursor++;
-              }
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ),
+              onRefresh: _onRefresh,
+              color: theme.colorScheme.primary,
+              child: ListView.builder(
+                padding: padding,
+                itemCount: dates
+                    .map((d) => 1 + itemsForDate(d).length)
+                    .fold<int>(0, (int sum, int len) => sum + len),
+                itemBuilder: (_, idx) {
+                  int cursor = 0;
+                  for (var date in dates) {
+                    if (idx == cursor) return _buildDateDivider(date, theme);
+                    cursor++;
+                    final items = itemsForDate(date);
+                    for (var item in items) {
+                      if (idx == cursor) return _buildCard(item, theme, isWide);
+                      cursor++;
+                    }
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
     );
   }
 
@@ -300,7 +309,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.notifications_off, size: 60, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+        Icon(
+          Icons.notifications_off,
+          size: 60,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+        ),
         const SizedBox(height: 16),
         Text('No alerts or events', style: theme.textTheme.titleMedium),
         TextButton(
@@ -320,7 +333,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
     child: Row(
       children: [
         const Expanded(child: Divider()),
-        Text(date, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+        Text(
+          date,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.primary,
+          ),
+        ),
         const Expanded(child: Divider()),
       ],
     ),
@@ -369,7 +388,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.bodyMedium,
         ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: theme.iconTheme.color),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: theme.iconTheme.color,
+        ),
         onTap: () => _showDetailsDialog(item, theme),
       ),
     );
@@ -377,7 +400,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   void _showDetailsDialog(Map<String, dynamic> item, ThemeData theme) {
     final ts = DateTime.fromMillisecondsSinceEpoch(item['timestamp']);
-    final hasAttachment = item['attachment'] != null && item['attachment'].isNotEmpty;
+    final hasAttachment =
+        item['attachment'] != null && item['attachment'].isNotEmpty;
 
     showDialog(
       context: context,
@@ -392,7 +416,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'At ${ts.day}-${ts.month}-${ts.year} '
-                      '${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}',
+                  '${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}',
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -408,7 +432,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     MaterialPageRoute(
                       builder: (_) => FileViewerScreen(
                         fileUrl: item['attachment'],
-                        fileName: Uri.parse(item['attachment']).pathSegments.last,
+                        fileName: Uri.parse(
+                          item['attachment'],
+                        ).pathSegments.last,
                       ),
                     ),
                   );
@@ -438,22 +464,32 @@ class _AlertsScreenState extends State<AlertsScreen> {
       spans.add(TextSpan(text: parts[i], style: theme.textTheme.bodyMedium));
       if (i < matches.length) {
         final url = matches[i].group(0)!;
-        spans.add(TextSpan(
-          text: url,
-          style: theme.textTheme.bodyMedium?.copyWith(decoration: TextDecoration.underline, color: theme.colorScheme.secondary),
-          recognizer: TapGestureRecognizer()..onTap = () async => _launchURL(context, url),
-        ));
+        spans.add(
+          TextSpan(
+            text: url,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              decoration: TextDecoration.underline,
+              color: theme.colorScheme.secondary,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () async => _launchURL(context, url),
+          ),
+        );
       }
     }
     if (attachment != null && attachment.isNotEmpty) {
       spans.add(const TextSpan(text: '\n'));
-      spans.add(TextSpan(
-        text: 'Attachment: ${Uri.parse(attachment).pathSegments.last}',
-        style: theme.textTheme.bodyMedium,
-      ));
+      spans.add(
+        TextSpan(
+          text: 'Attachment: ${Uri.parse(attachment).pathSegments.last}',
+          style: theme.textTheme.bodyMedium,
+        ),
+      );
     }
 
-    return RichText(text: TextSpan(style: theme.textTheme.bodyMedium, children: spans));
+    return RichText(
+      text: TextSpan(style: theme.textTheme.bodyMedium, children: spans),
+    );
   }
 }
 
@@ -471,10 +507,10 @@ void _launchURL(BuildContext context, String? url) async {
 
   try {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      _showSnack(context, 'Could not launch');
+      if (context.mounted) _showSnack(context, 'Could not launch');
     }
   } catch (_) {
-    _showSnack(context, 'Error opening link');
+    if (context.mounted) _showSnack(context, 'Error opening link');
   }
 }
 

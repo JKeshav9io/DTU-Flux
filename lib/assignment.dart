@@ -118,7 +118,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                 const SizedBox(height: 16),
                 if (subjects.isNotEmpty)
                   DropdownButtonFormField<String>(
-                    value: selectedSubject,
+                    initialValue: selectedSubject,
                     decoration: InputDecoration(
                       labelText: 'Subject',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -258,7 +258,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FileViewerScreen(fileUrl: fileURL, fileName: "${title}.pdf"),
+                          builder: (_) => FileViewerScreen(fileUrl: fileURL, fileName: "$title.pdf"),
                         ),
                       );
                     },

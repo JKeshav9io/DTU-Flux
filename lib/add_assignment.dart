@@ -9,7 +9,7 @@ class AssignmentForm extends StatefulWidget {
   const AssignmentForm({super.key});
 
   @override
-  _AssignmentFormState createState() => _AssignmentFormState();
+  State<AssignmentForm> createState() => _AssignmentFormState();
 }
 
 class _AssignmentFormState extends State<AssignmentForm> {
@@ -63,7 +63,10 @@ class _AssignmentFormState extends State<AssignmentForm> {
     }
   }
 
-  Future<String?> _uploadFileToSupabase(String subjectCode, PlatformFile file) async {
+  Future<String?> _uploadFileToSupabase(
+    String subjectCode,
+    PlatformFile file,
+  ) async {
     try {
       if (file.path == null) {
         throw Exception('File path is null. Please select another file.');
@@ -71,22 +74,29 @@ class _AssignmentFormState extends State<AssignmentForm> {
 
       // Read bytes from the picked file path
       final fileBytes = await File(file.path!).readAsBytes();
-      final storagePath = '$subjectCode/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+      final storagePath =
+          '$subjectCode/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
       const bucket = 'assignements';
 
       // Upload
       await supabase.storage
           .from(bucket)
-          .uploadBinary(storagePath, fileBytes, fileOptions: const FileOptions(upsert: true));
+          .uploadBinary(
+            storagePath,
+            fileBytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
 
       // Get public URL
       final publicURL = supabase.storage.from(bucket).getPublicUrl(storagePath);
       return publicURL;
     } catch (e) {
       debugPrint('Upload error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File upload failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('File upload failed: $e')));
+      }
       return null;
     }
   }
@@ -97,7 +107,9 @@ class _AssignmentFormState extends State<AssignmentForm> {
         _selectedFile == null ||
         _selectedSubjectCode == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields and select a file.')),
+        const SnackBar(
+          content: Text('Please fill all fields and select a file.'),
+        ),
       );
       return;
     }
@@ -106,7 +118,10 @@ class _AssignmentFormState extends State<AssignmentForm> {
     final assignId = 'assign_${DateTime.now().millisecondsSinceEpoch}';
 
     // 1️⃣ Upload file to Supabase
-    final fileURL = await _uploadFileToSupabase(_selectedSubjectCode!, _selectedFile!);
+    final fileURL = await _uploadFileToSupabase(
+      _selectedSubjectCode!,
+      _selectedFile!,
+    );
     if (fileURL == null) {
       setState(() => _isSubmitting = false);
       return;
@@ -123,18 +138,19 @@ class _AssignmentFormState extends State<AssignmentForm> {
         .collection('assignments')
         .doc(assignId)
         .set({
-      'title': _titleController.text.trim(),
-      'description': _descriptionController.text.trim(),
-      'unit': _unitController.text.trim(),
-      'subjectCode': _selectedSubjectCode,
-      'dueDate': Timestamp.fromDate(_selectedDate!),
-      'fileName': _selectedFile!.name,
-      'fileURL': fileURL,
-      'isSubmitted': false,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+          'title': _titleController.text.trim(),
+          'description': _descriptionController.text.trim(),
+          'unit': _unitController.text.trim(),
+          'subjectCode': _selectedSubjectCode,
+          'dueDate': Timestamp.fromDate(_selectedDate!),
+          'fileName': _selectedFile!.name,
+          'fileURL': fileURL,
+          'isSubmitted': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
     setState(() => _isSubmitting = false);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Assignment added successfully')),
     );
@@ -157,137 +173,198 @@ class _AssignmentFormState extends State<AssignmentForm> {
         child: _isLoadingSubjects
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Title', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    hintText: 'e.g., Assignment 1',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Title',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: 'e.g., Assignment 1',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                        validator: (val) => val!.isEmpty ? 'Enter title' : null,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Subject',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        decoration: BoxDecoration(
+                          color: theme.cardColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: theme.dividerColor),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: _selectedSubjectCode,
+                            onChanged: (val) =>
+                                setState(() => _selectedSubjectCode = val),
+                            items: _subjects.map((subj) {
+                              return DropdownMenuItem<String>(
+                                value: subj['code'],
+                                child: Text(
+                                  subj['name']!,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Unit',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        controller: _unitController,
+                        decoration: InputDecoration(
+                          hintText: 'e.g., Unit 2',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                        validator: (val) => val!.isEmpty ? 'Enter unit' : null,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Description',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Brief description of the assignment',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                        validator: (val) =>
+                            val!.isEmpty ? 'Enter description' : null,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Due Date',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        tileColor: theme.cardColor,
+                        title: Text(
+                          _selectedDate == null
+                              ? 'Select due date'
+                              : 'Due: ${DateFormat('dd MMM yyyy').format(_selectedDate!)}',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        trailing: Icon(
+                          Icons.calendar_today,
+                          color: theme.iconTheme.color,
+                        ),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2023),
+                            lastDate: DateTime(2030),
+                          );
+                          if (picked != null) {
+                            setState(() => _selectedDate = picked);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Attachment',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: theme.colorScheme.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: _pickFile,
+                          child: Text(
+                            _selectedFile == null
+                                ? 'Select File'
+                                : 'Selected: ${_selectedFile!.name}',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                          ),
+                          onPressed: _isSubmitting ? null : _submitAssignment,
+                          child: _isSubmitting
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  'Submit Assignment',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
-                  validator: (val) => val!.isEmpty ? 'Enter title' : null,
-                  style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 12),
-                Text('Subject', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: theme.dividerColor),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: _selectedSubjectCode,
-                      onChanged: (val) => setState(() => _selectedSubjectCode = val),
-                      items: _subjects.map((subj) {
-                        return DropdownMenuItem<String>(
-                          value: subj['code'],
-                          child: Text(subj['name']!, style: theme.textTheme.bodyMedium),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text('Unit', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _unitController,
-                  decoration: InputDecoration(
-                    hintText: 'e.g., Unit 2',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
-                  ),
-                  validator: (val) => val!.isEmpty ? 'Enter unit' : null,
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 12),
-                Text('Description', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: 'Brief description of the assignment',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
-                  ),
-                  validator: (val) => val!.isEmpty ? 'Enter description' : null,
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 12),
-                Text('Due Date', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                ListTile(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  tileColor: theme.cardColor,
-                  title: Text(
-                    _selectedDate == null
-                        ? 'Select due date'
-                        : 'Due: ${DateFormat('dd MMM yyyy').format(_selectedDate!)}',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  trailing: Icon(Icons.calendar_today, color: theme.iconTheme.color),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2023),
-                      lastDate: DateTime(2030),
-                    );
-                    if (picked != null) setState(() => _selectedDate = picked);
-                  },
-                ),
-                const SizedBox(height: 12),
-                Text('Attachment', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: theme.colorScheme.primary),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: _pickFile,
-                    child: Text(
-                      _selectedFile == null ? 'Select File' : 'Selected: ${_selectedFile!.name}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: theme.colorScheme.onPrimary,
-                    ),
-                    onPressed: _isSubmitting ? null : _submitAssignment,
-                    child: _isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text('Submit Assignment', style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }
