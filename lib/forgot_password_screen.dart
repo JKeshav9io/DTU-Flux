@@ -43,36 +43,49 @@ class _ForgorPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
                   try {
-                    await FirebaseAuth.instance
-                        .sendPasswordResetEmail(email: _emailController.text.trim());
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Password reset email sent!",
-                          style: TextStyle(color: Colors.white)),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
+                    await FirebaseAuth.instance.sendPasswordResetEmail(
+                      email: _emailController.text.trim(),
+                    );
+                    if (!mounted) return;
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Password reset email sent!",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Error sending email!",
-                          style: TextStyle(color: Colors.white)),
-                      backgroundColor: Colors.red,
+                    if (!mounted) return;
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Error sending email!",
+                          style: TextStyle(color: Colors.white),
                         ),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   }
                 },
-                child: Text("Send Reset Email",
-                  style: const TextStyle(color: Colors.white),
-                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B0000),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   textStyle: const TextStyle(fontSize: 16),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 15,
+                  ),
+                ),
+                child: Text(
+                  "Send Reset Email",
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ],

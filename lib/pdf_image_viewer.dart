@@ -71,10 +71,12 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       }
     } catch (e) {
       debugPrint('Error loading file: $e');
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Unable to load the file. Please try again later.'),
+            content: const Text(
+              'Unable to load the file. Please try again later.',
+            ),
           ),
         );
         Navigator.pop(context); // Go back
@@ -95,7 +97,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
         if (await Permission.storage.isGranted == false) {
           final status = await Permission.storage.request();
           if (!status.isGranted) {
-            if (context.mounted) {
+            if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Storage permission denied')),
               );
@@ -107,7 +109,9 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
 
       Directory? targetDir;
       if (Platform.isAndroid) {
-        final downloadDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
+        final downloadDirs = await getExternalStorageDirectories(
+          type: StorageDirectory.downloads,
+        );
         targetDir = (downloadDirs != null && downloadDirs.isNotEmpty)
             ? downloadDirs.first
             : await getExternalStorageDirectory();
@@ -116,14 +120,16 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       }
 
       final cleanedFileName = widget.fileName.trim().replaceAll(' ', '_');
-      final safeFileName = widget.fileUrl.toLowerCase().endsWith('.pdf') && !cleanedFileName.endsWith('.pdf')
+      final safeFileName =
+          widget.fileUrl.toLowerCase().endsWith('.pdf') &&
+              !cleanedFileName.endsWith('.pdf')
           ? '$cleanedFileName.pdf'
           : cleanedFileName;
       final filePath = '${targetDir!.path}/$safeFileName';
 
       await Dio().download(widget.fileUrl, filePath);
 
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('File saved to $filePath'),
@@ -138,9 +144,11 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       }
     } catch (e) {
       debugPrint('Download error: $e');
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to download. Please try again.')),
+          const SnackBar(
+            content: Text('Failed to download. Please try again.'),
+          ),
         );
       }
     }
@@ -150,8 +158,12 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
     final lower = widget.fileName.toLowerCase();
     if (lower.endsWith('.pdf') && pdfController != null) {
       return PdfViewPinch(controller: pdfController!);
-    } else if (['.jpg', '.jpeg', '.png', '.webp']
-        .any((ext) => lower.endsWith(ext))) {
+    } else if ([
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+    ].any((ext) => lower.endsWith(ext))) {
       return cachedFile != null
           ? Image.file(cachedFile!)
           : const Center(child: Text('Image not loaded.'));
@@ -179,11 +191,11 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
           ? const Center(child: CircularProgressIndicator())
           : isError
           ? Center(
-        child: Text(
-          'Failed to load file',
-          style: theme.textTheme.bodyMedium,
-        ),
-      )
+              child: Text(
+                'Failed to load file',
+                style: theme.textTheme.bodyMedium,
+              ),
+            )
           : _buildViewer(),
     );
   }

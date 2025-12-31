@@ -5,7 +5,7 @@ import 'signin_page.dart';
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic> studentData;
 
-  const ProfilePage({Key? key, required this.studentData}) : super(key: key);
+  const ProfilePage({super.key, required this.studentData});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -32,19 +32,21 @@ class _ProfilePageState extends State<ProfilePage> {
     int conducted = attendanceData
         .where((d) => d['held'] == 'conducted')
         .length;
-    int present = attendanceData
-        .where((d) => d['status'] == 'present')
-        .length;
+    int present = attendanceData.where((d) => d['status'] == 'present').length;
     return conducted == 0 ? 0.0 : present / conducted * 100;
   }
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => SigninPage()));
+    if (!mounted) return;
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => SigninPage()));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Logged out successfully!"),
-          backgroundColor: Colors.red),
+      const SnackBar(
+        content: Text("Logged out successfully!"),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
@@ -58,12 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
         : const EdgeInsets.all(16.0);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "My Profile",
-        ),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text("My Profile"), centerTitle: true),
       body: SingleChildScrollView(
         padding: padding,
         child: Column(
@@ -72,19 +69,35 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 8),
             Text(
               studentInfo["name"] ?? 'NA',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               studentInfo["rollNo"] ?? 'NA',
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.hintColor,
+              ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                _infoCard("Semester", studentInfo["semester"]?.toString() ?? 'NA', theme),
-                _infoCard("Attendance", "${calculateAttendancePercentage().toStringAsFixed(2)}%", theme),
-                _infoCard("CGPA", latestPerformance["cgpa"]?.toString() ?? 'NA', theme),
+                _infoCard(
+                  "Semester",
+                  studentInfo["semester"]?.toString() ?? 'NA',
+                  theme,
+                ),
+                _infoCard(
+                  "Attendance",
+                  "${calculateAttendancePercentage().toStringAsFixed(2)}%",
+                  theme,
+                ),
+                _infoCard(
+                  "CGPA",
+                  latestPerformance["cgpa"]?.toString() ?? 'NA',
+                  theme,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -124,7 +137,11 @@ class _ProfilePageState extends State<ProfilePage> {
         shape: BoxShape.circle,
         color: theme.colorScheme.surface,
       ),
-      child: Icon(Icons.person, size: size * 0.5, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+      child: Icon(
+        Icons.person,
+        size: size * 0.5,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+      ),
     );
   }
 
@@ -138,12 +155,20 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-              Text(title,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600, color: theme.hintColor)),
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.hintColor,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(value,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
@@ -161,13 +186,21 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Personal Information",
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              "Personal Information",
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 12),
             _buildInfoRow("Roll No:", studentInfo["rollNo"] ?? 'NA', theme),
             _buildInfoRow("Branch:", studentInfo["branchName"] ?? 'NA', theme),
             _buildInfoRow("Course:", studentInfo["course"] ?? 'NA', theme),
-            _buildInfoRow("Year:", studentInfo["year"]?.toString() ?? 'NA', theme),
+            _buildInfoRow(
+              "Year:",
+              studentInfo["year"]?.toString() ?? 'NA',
+              theme,
+            ),
             _buildInfoRow("Phone:", studentInfo["contact"] ?? 'NA', theme),
             _buildInfoRow("Email:", studentInfo["email"] ?? 'NA', theme),
           ],
@@ -194,7 +227,9 @@ class _ProfilePageState extends State<ProfilePage> {
               value,
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -218,9 +253,13 @@ class _LogoutButton extends StatelessWidget {
       color: theme.cardColor,
       child: ListTile(
         leading: Icon(Icons.logout, color: theme.colorScheme.error),
-        title: Text("Logout",
-            style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600, color: theme.colorScheme.error)),
+        title: Text(
+          "Logout",
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.error,
+          ),
+        ),
         onTap: onLogout,
       ),
     );

@@ -7,12 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/googleapis_auth.dart';
 
 class NotificationServices {
   final FirebaseMessaging messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   final AndroidNotificationChannel _channel = const AndroidNotificationChannel(
     'high_importance_channel',
@@ -33,18 +32,20 @@ class NotificationServices {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('User granted provisional permission');
+      debugPrint('User granted permission');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      debugPrint('User granted provisional permission');
     } else {
-      print('User declined or has not accepted permission');
+      debugPrint('User declined or has not accepted permission');
     }
   }
 
-  void initLocalNotification(BuildContext context, RemoteMessage message) async { // Remove BuildContext parameter
+  void initLocalNotification(RemoteMessage message) async {
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings();
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
@@ -56,13 +57,15 @@ class NotificationServices {
         if (response.payload != null) {
           final data = jsonDecode(response.payload!) as Map<String, dynamic>;
           RemoteMessage mockMessage = RemoteMessage(data: data);
-          handleMessage(mockMessage);  // Use mock message
+          handleMessage(mockMessage); // Use mock message
         }
       },
     );
 
     await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
   }
 
@@ -72,7 +75,7 @@ class NotificationServices {
   }
 
   void isTokenRefresh() => messaging.onTokenRefresh.listen((token) {
-    print("Token refreshed: $token");
+    debugPrint("Token refreshed: $token");
   });
 
   Future<void> showNotification(RemoteMessage message) async {
@@ -107,17 +110,18 @@ class NotificationServices {
     );
   }
 
-  void firebaseinit(BuildContext context ) { // Remove BuildContext parameter
+  void firebaseinit() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print(message.notification?.body.toString());
-      print(message.notification?.title.toString());
-      print(message.data.toString());
-      print(message.data["type"]);
-      //print('Foreground message: ${message.notification?.title}');
-      initLocalNotification(context, message);
+      debugPrint(message.notification?.body.toString());
+      debugPrint(message.notification?.title.toString());
+      debugPrint(message.data.toString());
+      debugPrint(message.data["type"]);
+      //debugPrint('Foreground message: ${message.notification?.title}');
+      initLocalNotification(message);
       showNotification(message); // Works for both platforms
     });
   }
+
   void handleMessage(RemoteMessage message) {
     if (message.data["screen"] == 'alerts') {
       navigatorKey.currentState?.push(
@@ -126,10 +130,10 @@ class NotificationServices {
     }
   }
 
-
   Future<void> setupInteractMessage() async {
     // When app is terminated and opened via notification
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
+        .getInitialMessage();
     if (initialMessage != null) {
       handleMessage(initialMessage);
     }
@@ -150,19 +154,16 @@ class NotificationServices {
     const topic = '2024_MCE_B05';
     const projectId = 'dtu-connect-2';
 
-    final url = Uri.parse('https://fcm.googleapis.com/v1/projects/$projectId/messages:send');
+    final url = Uri.parse(
+      'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
+    );
 
     final message = {
       "message": {
         "topic": topic,
-        "notification": {
-          "title": title,
-          "body": body,
-        },
-        "data": {
-          "screen": screenToNavigate,
-        }
-      }
+        "notification": {"title": title, "body": body},
+        "data": {"screen": screenToNavigate},
+      },
     };
 
     final response = await http.post(
@@ -175,12 +176,11 @@ class NotificationServices {
     );
 
     if (response.statusCode == 200) {
-      print('✅ Notification sent to topic "$topic"');
+      debugPrint('✅ Notification sent to topic "$topic"');
     } else {
-      print('❌ Failed to send notification: ${response.body}');
+      debugPrint('❌ Failed to send notification: ${response.body}');
     }
   }
-
 }
 
 class GetServerKey {
@@ -188,12 +188,16 @@ class GetServerKey {
   static DateTime? _expiryTime;
 
   Future<String> getServerKeyToken() async {
-    if (_cachedToken != null && _expiryTime != null && DateTime.now().isBefore(_expiryTime!)) {
+    if (_cachedToken != null &&
+        _expiryTime != null &&
+        DateTime.now().isBefore(_expiryTime!)) {
       return _cachedToken!;
     }
 
     // Load JSON credentials
-    final jsonString = await rootBundle.loadString('Assets/secrets/service_account.json');
+    final jsonString = await rootBundle.loadString(
+      'Assets/secrets/service_account.json',
+    );
     final jsonMap = json.decode(jsonString);
 
     // Scopes
@@ -214,4 +218,3 @@ class GetServerKey {
     return _cachedToken!;
   }
 }
-

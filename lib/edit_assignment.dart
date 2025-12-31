@@ -22,7 +22,7 @@ class EditAssignmentForm extends StatefulWidget {
   });
 
   @override
-  _EditAssignmentFormState createState() => _EditAssignmentFormState();
+  State<EditAssignmentForm> createState() => _EditAssignmentFormState();
 }
 
 class _EditAssignmentFormState extends State<EditAssignmentForm> {
@@ -44,8 +44,9 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
     // Prefill controllers
     _titleController = TextEditingController(text: widget.initialData['title']);
     _unitController = TextEditingController(text: widget.initialData['unit']);
-    _descriptionController =
-        TextEditingController(text: widget.initialData['description']);
+    _descriptionController = TextEditingController(
+      text: widget.initialData['description'],
+    );
     final raw = widget.initialData['dueDate'];
     if (raw is Timestamp) {
       _selectedDate = raw.toDate();
@@ -62,7 +63,10 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
     }
   }
 
-  Future<String?> _uploadFileToSupabase(String subjectCode, PlatformFile file) async {
+  Future<String?> _uploadFileToSupabase(
+    String subjectCode,
+    PlatformFile file,
+  ) async {
     try {
       if (file.path == null) {
         throw Exception('File path is null. Please select another file.');
@@ -77,16 +81,22 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
       // Upload to Supabase
       await supabase.storage
           .from(bucket)
-          .uploadBinary(storagePath, fileBytes, fileOptions: const FileOptions(upsert: true));
+          .uploadBinary(
+            storagePath,
+            fileBytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
 
       // Get the public URL
       final publicURL = supabase.storage.from(bucket).getPublicUrl(storagePath);
       return publicURL;
     } catch (e) {
       debugPrint('Upload error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File upload failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('File upload failed: $e')));
+      }
       return null;
     }
   }
@@ -116,7 +126,10 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
 
     // If a new file was picked, upload it and store its URL
     if (_selectedFile != null) {
-      final fileURL = await _uploadFileToSupabase(widget.subjectCode, _selectedFile!);
+      final fileURL = await _uploadFileToSupabase(
+        widget.subjectCode,
+        _selectedFile!,
+      );
       if (fileURL != null) {
         updateData['fileName'] = _selectedFile!.name;
         updateData['fileURL'] = fileURL;
@@ -126,6 +139,7 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
     await ref.update(updateData);
 
     setState(() => _isSaving = false);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Assignment updated successfully')),
     );
@@ -151,15 +165,19 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Title',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Title',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 TextFormField(
                   controller: _titleController,
                   decoration: InputDecoration(
                     hintText: 'Assignment Title',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     filled: true,
                     fillColor: theme.colorScheme.surface,
                   ),
@@ -167,24 +185,33 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
-                Text('Subject Code',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Subject Code',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(widget.subjectCode,
-                      style: theme.textTheme.bodyMedium),
+                  child: Text(
+                    widget.subjectCode,
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Text('Unit',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Unit',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 TextFormField(
                   controller: _unitController,
                   decoration: InputDecoration(
                     hintText: 'e.g., Unit 2',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     filled: true,
                     fillColor: theme.colorScheme.surface,
                   ),
@@ -192,16 +219,20 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
-                Text('Description',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Description',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 TextFormField(
                   controller: _descriptionController,
                   maxLines: 3,
                   decoration: InputDecoration(
                     hintText: 'Description',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     filled: true,
                     fillColor: theme.colorScheme.surface,
                   ),
@@ -209,20 +240,27 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
-                Text('Due Date',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Due Date',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 ListTile(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   tileColor: theme.cardColor,
                   title: Text(
-                      _selectedDate == null
-                          ? 'Select date'
-                          : DateFormat('dd MMM yyyy').format(_selectedDate!),
-                      style: theme.textTheme.bodyMedium),
-                  trailing:
-                  Icon(Icons.calendar_today, color: theme.iconTheme.color),
+                    _selectedDate == null
+                        ? 'Select date'
+                        : DateFormat('dd MMM yyyy').format(_selectedDate!),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.calendar_today,
+                    color: theme.iconTheme.color,
+                  ),
                   onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
@@ -234,27 +272,34 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
                   },
                 ),
                 const SizedBox(height: 12),
-                Text('Attachment',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Attachment',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 OutlinedButton(
                   onPressed: _pickFile,
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: theme.colorScheme.primary),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: Text(
-                      _selectedFile == null
-                          ? 'Change File'
-                          : 'Selected: ${_selectedFile!.name}',
-                      style: theme.textTheme.bodyMedium),
+                    _selectedFile == null
+                        ? 'Change File'
+                        : 'Selected: ${_selectedFile!.name}',
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 CheckboxListTile(
                   value: _isSubmitted,
-                  title: Text('Mark assignment as submitted',
-                      style: theme.textTheme.bodyMedium),
+                  title: Text(
+                    'Mark assignment as submitted',
+                    style: theme.textTheme.bodyMedium,
+                  ),
                   onChanged: (val) => setState(() => _isSubmitted = val!),
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: theme.colorScheme.primary,
@@ -266,17 +311,20 @@ class _EditAssignmentFormState extends State<EditAssignmentForm> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: theme.colorScheme.onPrimary,
                     ),
                     onPressed: _isSaving ? null : _saveChanges,
                     child: _isSaving
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : Text('Save Changes',
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(
-                            color: theme.colorScheme.onPrimary)),
+                        : Text(
+                            'Save Changes',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          ),
                   ),
                 ),
               ],

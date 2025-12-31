@@ -15,30 +15,40 @@ class _SigninPageState extends State<SigninPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  @override
   void initState() {
     super.initState();
     passwordVisible = false;
   }
+
   Future<void> _signIn() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login Successful!",
-            style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
+        const SnackBar(
+          content: Text(
+            "Login Successful!",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
         ),
       );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const Dashboard()),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login Failed! Please try again.",
-            style: TextStyle(color: Colors.white)),
+        const SnackBar(
+          content: Text(
+            "Login Failed! Please try again.",
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
@@ -87,15 +97,16 @@ class _SigninPageState extends State<SigninPage> {
                 decoration: InputDecoration(
                   labelText: "Password",
                   prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(onPressed:() {
+                  suffixIcon: IconButton(
+                    onPressed: () {
                       setState(() {
                         passwordVisible = !passwordVisible;
-
                       });
-                  },  // Add functionality to toggle password visibility
-                      icon: passwordVisible
-                          ? Icon(Icons.visibility)
-                          : Icon(Icons.visibility_off)),
+                    }, // Add functionality to toggle password visibility
+                    icon: passwordVisible
+                        ? Icon(Icons.visibility)
+                        : Icon(Icons.visibility_off),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -125,7 +136,10 @@ class _SigninPageState extends State<SigninPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text("Sign In", style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  "Sign In",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               const SizedBox(height: 20),
             ],

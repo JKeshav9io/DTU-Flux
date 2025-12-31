@@ -15,7 +15,8 @@ class ManageAssignment extends StatefulWidget {
 class _ManageAssignmentState extends State<ManageAssignment> {
   List<Map<String, String>> subjects = [];
   String selectedSubjectCode = '';
-  Map<String, List<QueryDocumentSnapshot<Map<String, dynamic>>>> assignmentCache = {};
+  Map<String, List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+  assignmentCache = {};
   bool isLoadingSubjects = true;
   bool isLoadingAssignments = false;
 
@@ -36,10 +37,12 @@ class _ManageAssignmentState extends State<ManageAssignment> {
         .get();
 
     subjects = snapshot.docs
-        .map((doc) => {
-      'code': doc['subjectCode'] as String,
-      'name': doc['subjectName'] as String,
-    })
+        .map(
+          (doc) => {
+            'code': doc['subjectCode'] as String,
+            'name': doc['subjectName'] as String,
+          },
+        )
         .toList();
 
     if (subjects.isNotEmpty) {
@@ -82,7 +85,8 @@ class _ManageAssignmentState extends State<ManageAssignment> {
         ? EdgeInsets.symmetric(horizontal: screenWidth * 0.15, vertical: 24)
         : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0);
 
-    final docs = assignmentCache[selectedSubjectCode] ?? [];
+    // Assignment cache for selected subject
+    // final docs = assignmentCache[selectedSubjectCode] ?? [];
 
     return Scaffold(
       appBar: AppBar(
@@ -92,9 +96,7 @@ class _ManageAssignmentState extends State<ManageAssignment> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(
-              builder: (_) => const AssignmentForm(),
-            ))
+                .push(MaterialPageRoute(builder: (_) => const AssignmentForm()))
                 .then((_) => _fetchAssignmentsFor(selectedSubjectCode)),
           ),
         ],
@@ -104,10 +106,7 @@ class _ManageAssignmentState extends State<ManageAssignment> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Select Subject:',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text('Select Subject:', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             if (isLoadingSubjects)
               const Center(child: CircularProgressIndicator())
@@ -168,7 +167,9 @@ class _ManageAssignmentState extends State<ManageAssignment> {
         final doc = docs[index];
         final data = doc.data();
         final raw = data['dueDate'];
-        final due = raw is Timestamp ? raw.toDate() : DateTime.tryParse(raw.toString()) ?? DateTime.now();
+        final due = raw is Timestamp
+            ? raw.toDate()
+            : DateTime.tryParse(raw.toString()) ?? DateTime.now();
         final formatted = DateFormat('dd MMM yyyy').format(due);
         final isSubmitted = data['isSubmitted'] ?? false;
         final status = _getStatus(isSubmitted, due);
@@ -231,9 +232,7 @@ class AssignCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -251,7 +250,10 @@ class AssignCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: _getStatusColor(status),
                     borderRadius: BorderRadius.circular(6),
@@ -269,26 +271,29 @@ class AssignCard extends StatelessWidget {
                   icon: const Icon(Icons.edit, size: 20),
                   onPressed: () {
                     Navigator.of(context)
-                        .push(MaterialPageRoute(
-                      builder: (_) => EditAssignmentForm(
-                        branchId: 'MCE',
-                        sectionId: 'B05',
-                        subjectCode: subjectCode,
-                        docId: docId,
-                        initialData: rawData,
-                      ),
-                    ))
-                        .then((_) => context.findAncestorStateOfType<_ManageAssignmentState>()
-                        ?._fetchAssignmentsFor(subjectCode));
+                        .push(
+                          MaterialPageRoute(
+                            builder: (_) => EditAssignmentForm(
+                              branchId: 'MCE',
+                              sectionId: 'B05',
+                              subjectCode: subjectCode,
+                              docId: docId,
+                              initialData: rawData,
+                            ),
+                          ),
+                        )
+                        .then((_) {
+                          if (!context.mounted) return;
+                          context
+                              .findAncestorStateOfType<_ManageAssignmentState>()
+                              ?._fetchAssignmentsFor(subjectCode);
+                        });
                   },
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              description,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(description, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -296,7 +301,9 @@ class AssignCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   'Due: $dueDate',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               ],
             ),

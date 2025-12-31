@@ -4,7 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventsScreen extends StatefulWidget {
-  const EventsScreen({Key? key}) : super(key: key);
+  const EventsScreen({super.key});
 
   @override
   State<EventsScreen> createState() => _EventsScreenState();
@@ -32,17 +32,16 @@ class _EventsScreenState extends State<EventsScreen> {
     final horizontalPadding = isWide ? screenWidth * 0.15 : 16.0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Events'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Events'), centerTitle: true),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('events')
             .orderBy('dateTime')
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) return _buildMessage(context, 'Something went wrong');
+          if (snapshot.hasError) {
+            return _buildMessage(context, 'Something went wrong');
+          }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -64,7 +63,9 @@ class _EventsScreenState extends State<EventsScreen> {
               const SizedBox(height: 12),
               Text(
                 'Featured Events',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               ...featuredList.map((d) => _buildCard(context, d, theme, isWide)),
@@ -81,11 +82,11 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildBanner(
-      BuildContext context,
-      QueryDocumentSnapshot data,
-      ThemeData theme,
-      bool isWide,
-      ) {
+    BuildContext context,
+    QueryDocumentSnapshot data,
+    ThemeData theme,
+    bool isWide,
+  ) {
     final map = data.data() as Map<String, dynamic>;
     final url = map['link'] as String?;
     final dateTimeText = EventsScreen._formatDateTime(map['dateTime']);
@@ -112,7 +113,11 @@ class _EventsScreenState extends State<EventsScreen> {
                   );
                 },
                 errorBuilder: (_, __, ___) => Center(
-                  child: Icon(Icons.broken_image, size: 40, color: theme.disabledColor),
+                  child: Icon(
+                    Icons.broken_image,
+                    size: 40,
+                    color: theme.disabledColor,
+                  ),
                 ),
               ),
               Positioned(
@@ -131,7 +136,13 @@ class _EventsScreenState extends State<EventsScreen> {
                         map['eventName'] ?? '',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
-                          shadows: [const Shadow(blurRadius: 3, color: Colors.black45, offset: Offset(1, 1))],
+                          shadows: [
+                            const Shadow(
+                              blurRadius: 3,
+                              color: Colors.black45,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -148,7 +159,9 @@ class _EventsScreenState extends State<EventsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: theme.colorScheme.onPrimary,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                         child: const Text('Register Now'),
                       ),
@@ -164,11 +177,11 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildCard(
-      BuildContext context,
-      QueryDocumentSnapshot data,
-      ThemeData theme,
-      bool isWide,
-      ) {
+    BuildContext context,
+    QueryDocumentSnapshot data,
+    ThemeData theme,
+    bool isWide,
+  ) {
     final map = data.data() as Map<String, dynamic>;
     final title = map['eventName'] as String? ?? '';
     final desc = map['description'] as String? ?? '';
@@ -230,11 +243,16 @@ class _EventsScreenState extends State<EventsScreen> {
                         Expanded(
                           child: Text(
                             title,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primary,
                             borderRadius: BorderRadius.circular(8),
@@ -280,10 +298,10 @@ class _EventsScreenState extends State<EventsScreen> {
 
     try {
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        _showSnack(context, 'Could not launch');
+        if (context.mounted) _showSnack(context, 'Could not launch');
       }
     } catch (_) {
-      _showSnack(context, 'Error opening link');
+      if (context.mounted) _showSnack(context, 'Error opening link');
     }
   }
 
